@@ -4,6 +4,9 @@ const PRECACHE_STATIC_ASSETS = [
   "/",
   "/favicon.ico",
   "/icon.svg",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/apple-touch-icon.png",
   "/globals.css",
 ];
 
