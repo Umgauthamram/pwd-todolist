@@ -38,6 +38,9 @@ declare module "@mui/icons-material" {
   export const ArrowBack: SvgIconComponent;
   export const Logout: SvgIconComponent;
   export const Person: SvgIconComponent;
+  export const BackspaceOutlined: SvgIconComponent;
+  export const LockResetOutlined: SvgIconComponent;
+  export const LockOpenOutlined: SvgIconComponent;
 
   const icons: Record<string, SvgIconComponent>;
   export default icons;

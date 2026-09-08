@@ -18,6 +18,7 @@ import {
   SettingsOutlined as SettingsOutlinedIcon,
   LightbulbOutlined as LightbulbOutlinedIcon,
   LockOutlined as LockOutlinedIcon,
+  LockOpenOutlined as LockOpenOutlinedIcon,
   ArchiveOutlined as ArchiveOutlinedIcon,
   DeleteOutlined as DeleteOutlinedIcon,
   Logout as LogoutIcon,
@@ -25,11 +26,13 @@ import {
   LabelOutlined as LabelOutlinedIcon,
   DeleteForever as DeleteForeverIcon,
   RestoreFromTrash as RestoreFromTrashIcon,
+  VpnKey as VpnKeyIcon,
 } from "@mui/icons-material";
 import { useAuth } from "@/context/AuthContext";
 import NoteCreator, { CreateNotePayload } from "@/components/notes/NoteCreator";
 import NoteCard, { NoteItem } from "@/components/notes/NoteCard";
 import NoteModal from "@/components/notes/NoteModal";
+import PinModal, { PinModalMode } from "@/components/private-space/PinModal";
 
 type NavItem = "notes" | "private" | "archive" | "trash" | "settings";
 
@@ -53,7 +56,7 @@ const DEMO_STARTER_NOTES: NoteItem[] = [
     userId: "guest",
     title: "Color Themes & Labels 🎨",
     content: "Try changing note colors using the palette icon on hover! You can also organize your thoughts by appending custom label tags like #project, #work, or #ideas.",
-    color: "#162E46", // Deep Ocean
+    color: "#162E46",
     isPinned: false,
     isArchived: false,
     isTrashed: false,
@@ -66,33 +69,52 @@ const DEMO_STARTER_NOTES: NoteItem[] = [
     userId: "guest",
     title: "Secure Private Space 🔒",
     content: "Private notes are strictly isolated on the backend. When locked, they cannot be seen by anyone without the 4-digit PIN session token. Forgotten your PIN? Request a single-use reset token via Nodemailer!",
-    color: "#381E24", // Coral Wine
+    color: "#381E24",
     isPinned: false,
     isArchived: false,
     isTrashed: false,
     isPrivate: false,
-    labels: ["security", "phase4"],
+    labels: ["security", "pin"],
     updatedAt: new Date().toISOString(),
   },
 ];
 
 export default function HomePage() {
-  const { user, loading: authLoading, openAuthModal, logout } = useAuth();
+  const {
+    user,
+    loading: authLoading,
+    openAuthModal,
+    logout,
+    isPrivateUnlocked,
+    setIsPrivateUnlocked,
+    checkPrivateStatus,
+    lockPrivateSpace,
+  } = useAuth();
+
   const [activeTab, setActiveTab] = useState<NavItem>("notes");
   const [isGridView, setIsGridView] = useState<boolean>(true);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
 
-  // Notes state
+  // Public notes state
   const [notes, setNotes] = useState<NoteItem[]>([]);
   const [loadingNotes, setLoadingNotes] = useState<boolean>(false);
+
+  // Private space notes state (strictly isolated)
+  const [privateNotes, setPrivateNotes] = useState<NoteItem[]>([]);
+  const [loadingPrivateNotes, setLoadingPrivateNotes] = useState<boolean>(false);
+
+  // Note editing modal state
   const [editingNote, setEditingNote] = useState<NoteItem | null>(null);
 
-  // Fetch public workspace notes from API (or load demo notes for guests)
-  const fetchNotes = useCallback(async () => {
+  // PIN Keypad Modal state
+  const [pinModalOpen, setPinModalOpen] = useState<boolean>(false);
+  const [pinModalMode, setPinModalMode] = useState<PinModalMode>("enter");
+
+  // Fetch public workspace notes
+  const fetchPublicNotes = useCallback(async () => {
     if (!user) {
-      // Load from localStorage or fallback to demo
       const savedLocal = localStorage.getItem("beginning_guest_notes");
       if (savedLocal) {
         try {
@@ -116,17 +138,49 @@ export default function HomePage() {
         }
       }
     } catch (error) {
-      console.error("Failed to load notes:", error);
+      console.error("Failed to load public notes:", error);
     } finally {
       setLoadingNotes(false);
     }
   }, [user]);
 
-  useEffect(() => {
-    fetchNotes();
-  }, [fetchNotes]);
+  // Fetch private workspace notes (gated by PIN session)
+  const fetchPrivateNotes = useCallback(async () => {
+    if (!user || !isPrivateUnlocked) {
+      setPrivateNotes([]);
+      return;
+    }
 
-  // Persist guest notes to localStorage
+    setLoadingPrivateNotes(true);
+    try {
+      const res = await fetch("/api/private-space/notes?filter=all");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.notes) {
+          setPrivateNotes(data.notes);
+        }
+      } else if (res.status === 403) {
+        // Locked
+        setIsPrivateUnlocked(false);
+      }
+    } catch (error) {
+      console.error("Failed to load private notes:", error);
+    } finally {
+      setLoadingPrivateNotes(false);
+    }
+  }, [user, isPrivateUnlocked, setIsPrivateUnlocked]);
+
+  useEffect(() => {
+    fetchPublicNotes();
+  }, [fetchPublicNotes]);
+
+  useEffect(() => {
+    if (activeTab === "private") {
+      fetchPrivateNotes();
+    }
+  }, [activeTab, fetchPrivateNotes]);
+
+  // Persist guest notes
   const saveGuestNotes = (updated: NoteItem[]) => {
     setNotes(updated);
     if (!user) {
@@ -134,52 +188,84 @@ export default function HomePage() {
     }
   };
 
-  // Create Note
+  // CREATE Note (handles both public & private)
   const handleCreateNote = async (payload: CreateNotePayload) => {
+    const isPrivateTarget = activeTab === "private";
+
     if (!user) {
       const newNote: NoteItem = {
         _id: `guest-${Date.now()}`,
         userId: "guest",
         ...payload,
         isTrashed: false,
-        isPrivate: false,
+        isPrivate: isPrivateTarget,
         updatedAt: new Date().toISOString(),
       };
-      saveGuestNotes([newNote, ...notes]);
+      if (isPrivateTarget) {
+        setPrivateNotes([newNote, ...privateNotes]);
+      } else {
+        saveGuestNotes([newNote, ...notes]);
+      }
       return;
     }
 
+    const endpoint = isPrivateTarget ? "/api/private-space/notes" : "/api/notes";
+
     try {
-      const res = await fetch("/api/notes", {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ ...payload, isPrivate: isPrivateTarget }),
       });
       if (res.ok) {
         const data = await res.json();
         if (data.note) {
-          setNotes((prev) => [data.note, ...prev]);
+          if (isPrivateTarget) {
+            setPrivateNotes((prev) => [data.note, ...prev]);
+          } else {
+            setNotes((prev) => [data.note, ...prev]);
+          }
         }
+      } else if (res.status === 403) {
+        setIsPrivateUnlocked(false);
+        setPinModalMode("enter");
+        setPinModalOpen(true);
       }
     } catch (error) {
       console.error("Failed to create note:", error);
     }
   };
 
-  // Update Note
+  // UPDATE Note
   const handleUpdateNote = async (updatedFields: Partial<NoteItem> & { _id: string }) => {
+    const isPrivateTarget = activeTab === "private";
+
     if (!user) {
-      const updated = notes.map((n) =>
-        n._id === updatedFields._id
-          ? { ...n, ...updatedFields, updatedAt: new Date().toISOString() }
-          : n
-      );
-      saveGuestNotes(updated);
+      if (isPrivateTarget) {
+        setPrivateNotes((prev) =>
+          prev.map((n) =>
+            n._id === updatedFields._id
+              ? { ...n, ...updatedFields, updatedAt: new Date().toISOString() }
+              : n
+          )
+        );
+      } else {
+        const updated = notes.map((n) =>
+          n._id === updatedFields._id
+            ? { ...n, ...updatedFields, updatedAt: new Date().toISOString() }
+            : n
+        );
+        saveGuestNotes(updated);
+      }
       return;
     }
 
+    const endpoint = isPrivateTarget
+      ? `/api/private-space/notes/${updatedFields._id}`
+      : `/api/notes/${updatedFields._id}`;
+
     try {
-      const res = await fetch(`/api/notes/${updatedFields._id}`, {
+      const res = await fetch(endpoint, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedFields),
@@ -187,9 +273,15 @@ export default function HomePage() {
       if (res.ok) {
         const data = await res.json();
         if (data.note) {
-          setNotes((prev) =>
-            prev.map((n) => (n._id === data.note._id ? data.note : n))
-          );
+          if (isPrivateTarget) {
+            setPrivateNotes((prev) =>
+              prev.map((n) => (n._id === data.note._id ? data.note : n))
+            );
+          } else {
+            setNotes((prev) =>
+              prev.map((n) => (n._id === data.note._id ? data.note : n))
+            );
+          }
         }
       }
     } catch (error) {
@@ -197,26 +289,22 @@ export default function HomePage() {
     }
   };
 
-  // Toggle Pin
   const handleTogglePin = (note: NoteItem) => {
     handleUpdateNote({ _id: note._id, isPinned: !note.isPinned });
   };
 
-  // Change Color
   const handleChangeColor = (note: NoteItem, newColor: string) => {
     handleUpdateNote({ _id: note._id, color: newColor });
   };
 
-  // Toggle Archive
   const handleToggleArchive = (note: NoteItem) => {
     handleUpdateNote({
       _id: note._id,
       isArchived: !note.isArchived,
-      isPinned: false, // Unpin when archiving
+      isPinned: false,
     });
   };
 
-  // Move to Trash
   const handleMoveToTrash = (note: NoteItem) => {
     handleUpdateNote({
       _id: note._id,
@@ -225,7 +313,6 @@ export default function HomePage() {
     });
   };
 
-  // Restore from Trash
   const handleRestoreFromTrash = (note: NoteItem) => {
     handleUpdateNote({
       _id: note._id,
@@ -233,64 +320,102 @@ export default function HomePage() {
     });
   };
 
-  // Delete Permanently
   const handleDeletePermanently = async (note: NoteItem) => {
+    const isPrivateTarget = activeTab === "private";
+
     if (!user) {
-      const updated = notes.filter((n) => n._id !== note._id);
-      saveGuestNotes(updated);
+      if (isPrivateTarget) {
+        setPrivateNotes((prev) => prev.filter((n) => n._id !== note._id));
+      } else {
+        const updated = notes.filter((n) => n._id !== note._id);
+        saveGuestNotes(updated);
+      }
       return;
     }
 
+    const endpoint = isPrivateTarget
+      ? `/api/private-space/notes/${note._id}?permanent=true`
+      : `/api/notes/${note._id}?permanent=true`;
+
     try {
-      const res = await fetch(`/api/notes/${note._id}?permanent=true`, {
-        method: "DELETE",
-      });
+      const res = await fetch(endpoint, { method: "DELETE" });
       if (res.ok) {
-        setNotes((prev) => prev.filter((n) => n._id !== note._id));
+        if (isPrivateTarget) {
+          setPrivateNotes((prev) => prev.filter((n) => n._id !== note._id));
+        } else {
+          setNotes((prev) => prev.filter((n) => n._id !== note._id));
+        }
       }
     } catch (error) {
       console.error("Failed to delete note permanently:", error);
     }
   };
 
-  // Empty all Trash
   const handleEmptyTrash = async () => {
-    const trashedNotes = notes.filter((n) => n.isTrashed);
-    for (const tn of trashedNotes) {
+    const targetNotes = activeTab === "private" ? privateNotes : notes;
+    const trashed = targetNotes.filter((n) => n.isTrashed);
+    for (const tn of trashed) {
       await handleDeletePermanently(tn);
     }
   };
 
-  // Handle Navigation Item Click
+  // Nav Item Click with Private Space Gating
   const handleNavClick = (id: NavItem) => {
     setSelectedLabel(null);
-    if (id === "private" && !user) {
-      openAuthModal("login");
+
+    if (id === "private") {
+      if (!user) {
+        openAuthModal("login");
+        return;
+      }
+
+      if (!user.hasPin) {
+        // Prompt to set up PIN
+        setPinModalMode("setup");
+        setPinModalOpen(true);
+        return;
+      }
+
+      if (!isPrivateUnlocked) {
+        // Prompt to enter PIN
+        setPinModalMode("enter");
+        setPinModalOpen(true);
+        return;
+      }
+
+      setActiveTab("private");
       return;
     }
+
     setActiveTab(id);
   };
 
-  // Filter notes based on activeTab, search query, and label filter
-  const filteredNotes = useMemo(() => {
-    let result = notes;
+  // Lock Private Space handler
+  const handleLockPrivateSpace = async () => {
+    await lockPrivateSpace();
+    setActiveTab("notes");
+  };
 
-    // View tab filtering
+  // Active dataset depending on view
+  const currentDataset = activeTab === "private" ? privateNotes : notes;
+
+  // Filter notes based on view, search, and label
+  const filteredNotes = useMemo(() => {
+    let result = currentDataset;
+
     if (activeTab === "trash") {
       result = result.filter((n) => n.isTrashed);
     } else if (activeTab === "archive") {
       result = result.filter((n) => n.isArchived && !n.isTrashed);
     } else {
-      // "notes" tab or default
+      // Notes or Private Space main view
       result = result.filter((n) => !n.isArchived && !n.isTrashed);
     }
 
-    // Label filtering
     if (selectedLabel) {
       result = result.filter((n) => n.labels?.includes(selectedLabel));
     }
 
-    // Search query filtering
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
@@ -302,9 +427,8 @@ export default function HomePage() {
     }
 
     return result;
-  }, [notes, activeTab, selectedLabel, searchQuery]);
+  }, [currentDataset, activeTab, selectedLabel, searchQuery]);
 
-  // Split into Pinned & Others for Google Keep layout
   const pinnedNotes = useMemo(
     () => filteredNotes.filter((n) => n.isPinned),
     [filteredNotes]
@@ -317,11 +441,11 @@ export default function HomePage() {
   // Extract all unique labels
   const allLabels = useMemo(() => {
     const set = new Set<string>();
-    notes.forEach((n) => {
+    currentDataset.forEach((n) => {
       n.labels?.forEach((l) => set.add(l));
     });
     return Array.from(set);
-  }, [notes]);
+  }, [currentDataset]);
 
   const navItems = [
     {
@@ -333,8 +457,15 @@ export default function HomePage() {
     {
       id: "private" as NavItem,
       label: "Private Space",
-      icon: <LockOutlinedIcon fontSize="small" />,
-      badge: user?.hasPin ? "Active" : "PIN Req",
+      icon: isPrivateUnlocked ? (
+        <LockOpenOutlinedIcon fontSize="small" className="text-amber-400" />
+      ) : (
+        <LockOutlinedIcon fontSize="small" />
+      ),
+      badge: !user?.hasPin ? "Set PIN" : isPrivateUnlocked ? "Unlocked" : "Locked",
+      count: isPrivateUnlocked
+        ? privateNotes.filter((n) => !n.isArchived && !n.isTrashed).length
+        : undefined,
     },
     {
       id: "archive" as NavItem,
@@ -390,12 +521,16 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Google Keep Search Bar */}
+        {/* Search Bar */}
         <div className="flex-1 max-w-2xl mx-4 hidden md:block">
           <div className="flex items-center w-full bg-[#1E293B] border border-[#334155] hover:border-slate-500 focus-within:border-sky-500 rounded-xl px-3 py-1.5 transition-all shadow-inner">
             <SearchIcon className="text-[#94A3B8] mr-2" fontSize="small" />
             <InputBase
-              placeholder="Search notes, content, or #labels..."
+              placeholder={
+                activeTab === "private"
+                  ? "Search locked private notes..."
+                  : "Search notes, content, or #labels..."
+              }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full text-sm text-[#F8FAFC] placeholder-[#94A3B8]"
@@ -416,7 +551,10 @@ export default function HomePage() {
         <div className="flex items-center gap-1 sm:gap-3">
           <Tooltip title="Refresh Notes">
             <IconButton
-              onClick={fetchNotes}
+              onClick={() => {
+                if (activeTab === "private") fetchPrivateNotes();
+                else fetchPublicNotes();
+              }}
               className="text-[#94A3B8] hover:text-white hover:bg-[#1E293B]"
               size="small"
             >
@@ -505,7 +643,6 @@ export default function HomePage() {
           }`}
         >
           <div className="space-y-6">
-            {/* Primary Navigation */}
             <nav className="space-y-1">
               {navItems.map((item) => {
                 const isActive = activeTab === item.id && !selectedLabel;
@@ -515,18 +652,34 @@ export default function HomePage() {
                     onClick={() => handleNavClick(item.id)}
                     className={`w-full flex items-center gap-4 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                       isActive
-                        ? "bg-[#1E293B] text-sky-400 border border-[#334155] shadow-sm"
+                        ? item.id === "private"
+                          ? "bg-amber-500/10 text-amber-400 border border-amber-500/30 shadow-sm"
+                          : "bg-[#1E293B] text-sky-400 border border-[#334155] shadow-sm"
                         : "text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#1E293B]/50"
                     }`}
                   >
-                    <span className={isActive ? "text-sky-400" : "text-[#94A3B8]"}>
+                    <span
+                      className={
+                        isActive
+                          ? item.id === "private"
+                            ? "text-amber-400"
+                            : "text-sky-400"
+                          : "text-[#94A3B8]"
+                      }
+                    >
                       {item.icon}
                     </span>
                     {sidebarOpen && (
                       <div className="flex-1 flex items-center justify-between">
                         <span className="truncate">{item.label}</span>
                         {item.badge && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono">
+                          <span
+                            className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
+                              item.badge === "Unlocked"
+                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                            }`}
+                          >
                             {item.badge}
                           </span>
                         )}
@@ -542,21 +695,18 @@ export default function HomePage() {
               })}
             </nav>
 
-            {/* Labels Navigation (if any exist) */}
+            {/* Labels Navigation */}
             {sidebarOpen && allLabels.length > 0 && (
               <div className="pt-3 border-t border-[#334155]/60 space-y-1">
                 <div className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-[#64748B]">
-                  Labels
+                  {activeTab === "private" ? "Private Labels" : "Labels"}
                 </div>
                 {allLabels.map((lbl) => {
                   const isLabelActive = selectedLabel === lbl;
                   return (
                     <button
                       key={lbl}
-                      onClick={() => {
-                        setSelectedLabel(isLabelActive ? null : lbl);
-                        setActiveTab("notes");
-                      }}
+                      onClick={() => setSelectedLabel(isLabelActive ? null : lbl)}
                       className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                         isLabelActive
                           ? "bg-[#1E293B] text-sky-400 border border-[#334155]"
@@ -572,29 +722,87 @@ export default function HomePage() {
             )}
           </div>
 
-          {/* Sidebar Footer */}
+          {/* Sidebar Security Footer */}
           {sidebarOpen && (
             <div className="p-3 rounded-xl bg-[#1E293B]/50 border border-[#334155] text-xs text-[#94A3B8] space-y-1">
               <div className="flex items-center gap-1.5 text-[#F8FAFC] font-medium">
-                <SecurityOutlinedIcon fontSize="inherit" className="text-sky-400" />
-                <span>Beginning Workspace</span>
+                <SecurityOutlinedIcon fontSize="inherit" className="text-amber-400" />
+                <span>Private Space Shield</span>
               </div>
               <p className="text-[11px] text-[#94A3B8]">
-                {user ? (
-                  <>Public notes synced with MongoDB.</>
-                ) : (
-                  <>Guest demo mode. Sign up to save notes online.</>
-                )}
+                {user?.hasPin
+                  ? isPrivateUnlocked
+                    ? "Private space is unlocked. Lock when leaving."
+                    : "Locked behind 4-digit bcrypt PIN."
+                  : "No PIN set. Click Private Space to configure."}
               </p>
             </div>
           )}
         </aside>
 
-        {/* Content Area */}
+        {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <div className="max-w-5xl mx-auto space-y-8">
-            {/* Note Creator Bar (Only visible in Notes view) */}
-            {activeTab === "notes" && !selectedLabel && (
+            {/* PRIVATE SPACE ACTIVE BANNER */}
+            {activeTab === "private" && (
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 border border-amber-500/30 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shadow-md">
+                    <LockOpenOutlinedIcon />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-[#F8FAFC] flex items-center gap-2">
+                      Private Space
+                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 font-normal">
+                        PIN Verified
+                      </span>
+                    </h2>
+                    <p className="text-xs text-[#94A3B8]">
+                      These notes are completely isolated from your public workspace and encrypted with your 4-digit PIN.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => {
+                      setPinModalMode("setup");
+                      setPinModalOpen(true);
+                    }}
+                    sx={{
+                      borderColor: "rgba(245, 158, 11, 0.4)",
+                      color: "#FBBF24",
+                      "&:hover": { borderColor: "#F59E0B", backgroundColor: "rgba(245, 158, 11, 0.1)" },
+                      fontSize: "12px",
+                      textTransform: "none",
+                    }}
+                  >
+                    Change PIN
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    onClick={handleLockPrivateSpace}
+                    startIcon={<LockOutlinedIcon fontSize="small" />}
+                    sx={{
+                      backgroundColor: "#F59E0B",
+                      color: "#0F172A",
+                      fontWeight: 600,
+                      "&:hover": { backgroundColor: "#D97706" },
+                      fontSize: "12px",
+                      textTransform: "none",
+                    }}
+                  >
+                    Lock Space
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Note Creator Bar (Visible in Notes or Private views) */}
+            {(activeTab === "notes" || activeTab === "private") && !selectedLabel && (
               <NoteCreator onSave={handleCreateNote} />
             )}
 
@@ -638,14 +846,14 @@ export default function HomePage() {
             )}
 
             {/* Loading Indicator */}
-            {loadingNotes && (
+            {(loadingNotes || loadingPrivateNotes) && (
               <div className="flex items-center justify-center py-12">
                 <CircularProgress size={32} sx={{ color: "#38BDF8" }} />
               </div>
             )}
 
-            {/* NOTES VIEW: PINNED & OTHERS SECTIONS */}
-            {activeTab === "notes" && (
+            {/* MAIN CANVAS: PINNED & OTHERS SECTIONS (Shared between Notes & Private Space) */}
+            {(activeTab === "notes" || activeTab === "private") && (
               <div className="space-y-8">
                 {/* Pinned Section */}
                 {pinnedNotes.length > 0 && (
@@ -717,17 +925,23 @@ export default function HomePage() {
                   </div>
                 )}
 
-                {/* Empty Notes State */}
-                {pinnedNotes.length === 0 && otherNotes.length === 0 && !loadingNotes && (
+                {/* Empty State */}
+                {pinnedNotes.length === 0 && otherNotes.length === 0 && !loadingNotes && !loadingPrivateNotes && (
                   <div className="text-center py-16 space-y-3">
                     <div className="w-16 h-16 mx-auto rounded-3xl bg-[#1E293B] border border-[#334155] flex items-center justify-center text-[#94A3B8]">
-                      <LightbulbOutlinedIcon sx={{ fontSize: 32 }} />
+                      {activeTab === "private" ? (
+                        <LockOutlinedIcon sx={{ fontSize: 32 }} className="text-amber-400" />
+                      ) : (
+                        <LightbulbOutlinedIcon sx={{ fontSize: 32 }} />
+                      )}
                     </div>
                     <Typography variant="h6" className="text-sm font-semibold text-white">
-                      No notes yet
+                      {activeTab === "private" ? "No private notes yet" : "No notes yet"}
                     </Typography>
                     <Typography variant="body2" className="text-xs text-[#94A3B8] max-w-sm mx-auto">
-                      Notes you add in the creator box above will appear here in your public workspace.
+                      {activeTab === "private"
+                        ? "Notes added here are secured behind your 4-digit PIN and completely isolated."
+                        : "Notes you add in the creator box above will appear here in your public workspace."}
                     </Typography>
                   </div>
                 )}
@@ -801,7 +1015,7 @@ export default function HomePage() {
                         note={note}
                         isTrashView={true}
                         viewMode={isGridView ? "grid" : "list"}
-                        onEdit={() => {}} // Disabled edit in trash
+                        onEdit={() => {}}
                         onTogglePin={handleTogglePin}
                         onChangeColor={handleChangeColor}
                         onToggleArchive={handleToggleArchive}
@@ -827,7 +1041,7 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* SETTINGS PREVIEW VIEW */}
+            {/* SETTINGS VIEW */}
             {activeTab === "settings" && (
               <div className="p-6 rounded-2xl bg-[#1E293B] border border-[#334155] space-y-4">
                 <div className="flex items-center gap-3">
@@ -848,8 +1062,8 @@ export default function HomePage() {
                       <>Guest Mode: Sign in to sync notes and enable private space.</>
                     )}
                   </p>
-                  <p className="text-sky-400 font-medium">
-                    Comprehensive Settings page with password change forms, PIN reset triggers, and PWA controls is scheduled for Phase 5.
+                  <p className="text-amber-400 font-medium">
+                    Private Space PIN: {user?.hasPin ? "Active & Configured" : "Not Set"}
                   </p>
                 </div>
               </div>
@@ -865,6 +1079,18 @@ export default function HomePage() {
         onClose={() => setEditingNote(null)}
         onUpdate={handleUpdateNote}
         onMoveToTrash={handleMoveToTrash}
+      />
+
+      {/* PIN Keypad Modal */}
+      <PinModal
+        open={pinModalOpen}
+        mode={pinModalMode}
+        onClose={() => setPinModalOpen(false)}
+        onSuccess={async () => {
+          await checkPrivateStatus();
+          setActiveTab("private");
+          fetchPrivateNotes();
+        }}
       />
     </Box>
   );

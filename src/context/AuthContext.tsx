@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 
 export interface UserProfile {
   id: string;
@@ -17,6 +17,10 @@ interface AuthContextType {
   isAuthModalOpen: boolean;
   authMode: AuthMode;
   pendingEmail: string;
+  isPrivateUnlocked: boolean;
+  setIsPrivateUnlocked: (unlocked: boolean) => void;
+  checkPrivateStatus: () => Promise<void>;
+  lockPrivateSpace: () => Promise<void>;
   setPendingEmail: (email: string) => void;
   openAuthModal: (mode?: AuthMode, email?: string) => void;
   closeAuthModal: () => void;
@@ -34,29 +38,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [pendingEmail, setPendingEmail] = useState<string>("");
+  const [isPrivateUnlocked, setIsPrivateUnlocked] = useState<boolean>(false);
 
-  const refreshUser = async () => {
+  const checkPrivateStatus = useCallback(async () => {
+    try {
+      const res = await fetch("/api/private-space/status");
+      if (res.ok) {
+        const data = await res.json();
+        setIsPrivateUnlocked(Boolean(data.isUnlocked));
+        if (data.hasPin !== undefined) {
+          setUser((prev) => (prev ? { ...prev, hasPin: Boolean(data.hasPin) } : prev));
+        }
+      } else {
+        setIsPrivateUnlocked(false);
+      }
+    } catch {
+      setIsPrivateUnlocked(false);
+    }
+  }, []);
+
+  const refreshUser = useCallback(async () => {
     try {
       const res = await fetch("/api/auth/me");
       if (res.ok) {
         const data = await res.json();
         if (data.authenticated && data.user) {
           setUser(data.user);
+          await checkPrivateStatus();
           return;
         }
       }
       setUser(null);
+      setIsPrivateUnlocked(false);
     } catch (err) {
       console.error("Failed to fetch session:", err);
       setUser(null);
+      setIsPrivateUnlocked(false);
     } finally {
       setLoading(false);
     }
-  };
+  }, [checkPrivateStatus]);
 
   useEffect(() => {
     refreshUser();
-  }, []);
+  }, [refreshUser]);
 
   const openAuthModal = (mode: AuthMode = "login", email = "") => {
     setAuthMode(mode);
@@ -68,10 +93,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthModalOpen(false);
   };
 
+  const lockPrivateSpace = async () => {
+    try {
+      await fetch("/api/private-space/lock", { method: "POST" });
+      setIsPrivateUnlocked(false);
+    } catch (err) {
+      console.error("Lock error:", err);
+    }
+  };
+
   const logout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
       setUser(null);
+      setIsPrivateUnlocked(false);
       window.location.reload();
     } catch (err) {
       console.error("Logout error:", err);
@@ -86,6 +121,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthModalOpen,
         authMode,
         pendingEmail,
+        isPrivateUnlocked,
+        setIsPrivateUnlocked,
+        checkPrivateStatus,
+        lockPrivateSpace,
         setPendingEmail,
         openAuthModal,
         closeAuthModal,

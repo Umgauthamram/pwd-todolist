@@ -104,6 +104,27 @@ export async function getAuthUserFromRequest(request?: NextRequest): Promise<Aut
 }
 
 /**
+ * Extract active PIN session token from Request cookies.
+ */
+export async function getPinSessionFromRequest(request?: NextRequest): Promise<PinSessionToken | null> {
+  let token: string | undefined;
+
+  if (request) {
+    token = request.cookies.get(PIN_SESSION_COOKIE_NAME)?.value;
+  } else {
+    try {
+      const cookieStore = await cookies();
+      token = cookieStore.get(PIN_SESSION_COOKIE_NAME)?.value;
+    } catch {
+      return null;
+    }
+  }
+
+  if (!token) return null;
+  return verifyPinToken(token);
+}
+
+/**
  * Generate a random 6-digit numeric OTP string.
  */
 export function generateOtp(): string {
