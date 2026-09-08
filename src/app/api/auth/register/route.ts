@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/lib/mongoose";
 import User from "@/models/User";
 import { hashPassword, generateOtp } from "@/lib/auth";
 import { sendOtpEmail } from "@/lib/nodemailer";
+import { isValidEmailDomain, EMAIL_ERROR_MESSAGE } from "@/lib/validators";
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,10 +18,9 @@ export async function POST(request: NextRequest) {
     }
 
     const trimmedEmail = email.trim().toLowerCase();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedEmail)) {
+    if (!isValidEmailDomain(trimmedEmail)) {
       return NextResponse.json(
-        { error: "Please enter a valid email address" },
+        { error: EMAIL_ERROR_MESSAGE },
         { status: 400 }
       );
     }

@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/lib/mongoose";
 import User from "@/models/User";
 import { generateOtp } from "@/lib/auth";
 import { sendPasswordResetEmail } from "@/lib/nodemailer";
+import { isValidEmailDomain, EMAIL_ERROR_MESSAGE } from "@/lib/validators";
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,6 +18,12 @@ export async function POST(request: NextRequest) {
     }
 
     const trimmedEmail = email.trim().toLowerCase();
+    if (!isValidEmailDomain(trimmedEmail)) {
+      return NextResponse.json(
+        { error: EMAIL_ERROR_MESSAGE },
+        { status: 400 }
+      );
+    }
 
     await connectToDatabase();
 

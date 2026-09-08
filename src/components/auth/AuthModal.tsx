@@ -15,6 +15,7 @@ import {
   ArrowBack as ArrowBackIcon,
 } from "@mui/icons-material";
 import { useAuth } from "@/context/AuthContext";
+import { isValidEmailDomain, EMAIL_ERROR_MESSAGE } from "@/lib/validators";
 
 export default function AuthModal() {
   const {
@@ -33,6 +34,16 @@ export default function AuthModal() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const applyDomain = (domain: string) => {
+    const atIndex = email.indexOf("@");
+    const username = atIndex >= 0 ? email.slice(0, atIndex) : email;
+    if (!username) {
+      setEmail(domain.replace("@", ""));
+    } else {
+      setEmail(username + domain);
+    }
+  };
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -106,20 +117,26 @@ export default function AuthModal() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!isValidEmailDomain(email.trim())) {
+      setError(EMAIL_ERROR_MESSAGE);
+      return;
+    }
+
     setLoading(true);
 
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: email.trim(), password }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
         if (data.requiresVerification) {
-          setPendingEmail(email);
+          setPendingEmail(email.trim());
           setAuthMode("verify");
           setResendCooldown(60);
           setError(data.message);
@@ -143,6 +160,11 @@ export default function AuthModal() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!isValidEmailDomain(email.trim())) {
+      setError(EMAIL_ERROR_MESSAGE);
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
@@ -224,10 +246,16 @@ export default function AuthModal() {
   const handleResendOtp = async () => {
     if (resendCooldown > 0 || loading) return;
     setError(null);
+
+    const targetEmail = (pendingEmail || email).trim();
+    if (!isValidEmailDomain(targetEmail)) {
+      setError(EMAIL_ERROR_MESSAGE);
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const targetEmail = pendingEmail || email;
       const res = await fetch("/api/auth/resend-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -257,13 +285,19 @@ export default function AuthModal() {
   const handleRequestPasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!isValidEmailDomain(email.trim())) {
+      setError(EMAIL_ERROR_MESSAGE);
+      return;
+    }
+
     setLoading(true);
 
     try {
       const res = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: email.trim() }),
       });
 
       const data = await res.json();
@@ -388,9 +422,22 @@ export default function AuthModal() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder="you@mail.com"
                   className="w-full bg-[#0e0e10] border border-[#262626] focus:border-white rounded-xl pl-10 pr-3 py-2.5 text-sm text-white placeholder-neutral-600 focus:outline-none transition-colors"
                 />
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                <span className="text-[10px] text-neutral-500">Quick domains:</span>
+                {["@mail.com", "@outlook.com", "@yahoo.com", "@gmail.com", "@hotmail.com"].map((dom) => (
+                  <button
+                    key={dom}
+                    type="button"
+                    onClick={() => applyDomain(dom)}
+                    className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-neutral-900 hover:bg-neutral-800 border border-[#262626] hover:border-neutral-500 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+                  >
+                    {dom}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -458,9 +505,22 @@ export default function AuthModal() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder="you@mail.com"
                   className="w-full bg-[#0e0e10] border border-[#262626] focus:border-white rounded-xl pl-10 pr-3 py-2.5 text-sm text-white placeholder-neutral-600 focus:outline-none transition-colors"
                 />
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                <span className="text-[10px] text-neutral-500">Quick domains:</span>
+                {["@mail.com", "@outlook.com", "@yahoo.com", "@gmail.com", "@hotmail.com"].map((dom) => (
+                  <button
+                    key={dom}
+                    type="button"
+                    onClick={() => applyDomain(dom)}
+                    className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-neutral-900 hover:bg-neutral-800 border border-[#262626] hover:border-neutral-500 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+                  >
+                    {dom}
+                  </button>
+                ))}
               </div>
             </div>
 
