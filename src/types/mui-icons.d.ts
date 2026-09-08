@@ -15,7 +15,10 @@ declare module "@mui/icons-material" {
   export const CheckBoxOutlined: SvgIconComponent;
   export const BrushOutlined: SvgIconComponent;
   export const ImageOutlined: SvgIconComponent;
+  export const PushPin: SvgIconComponent;
   export const PushPinOutlined: SvgIconComponent;
+  export const UnarchiveOutlined: SvgIconComponent;
+  export const Check: SvgIconComponent;
   export const CheckCircle: SvgIconComponent;
   export const Storage: SvgIconComponent;
   export const EmailOutlined: SvgIconComponent;
