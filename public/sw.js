@@ -1,4 +1,4 @@
-const CACHE_NAME = "beginning-pwa-v1";
+const CACHE_NAME = "beginning-pwa-v2";
 
 const PRECACHE_STATIC_ASSETS = [
   "/",
@@ -7,14 +7,20 @@ const PRECACHE_STATIC_ASSETS = [
   "/icon-192.png",
   "/icon-512.png",
   "/apple-touch-icon.png",
-  "/globals.css",
+  "/manifest.webmanifest",
 ];
 
-// Install: Cache core application shell
+// Install: Cache core application shell safely
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(PRECACHE_STATIC_ASSETS);
+    caches.open(CACHE_NAME).then(async (cache) => {
+      for (const asset of PRECACHE_STATIC_ASSETS) {
+        try {
+          await cache.add(asset);
+        } catch (err) {
+          console.warn("[PWA SW] Precache skipped for:", asset, err);
+        }
+      }
     })
   );
   self.skipWaiting();

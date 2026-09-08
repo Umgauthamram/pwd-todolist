@@ -11,6 +11,7 @@ import {
   Refresh as RefreshIcon,
   ArrowBack as ArrowBackIcon,
 } from "@mui/icons-material";
+import InstallMobileIcon from "@mui/icons-material/InstallMobile";
 import { useAuth, AuthMode } from "@/context/AuthContext";
 import { isValidEmailDomain, EMAIL_ERROR_MESSAGE, ALLOWED_EMAIL_DOMAINS } from "@/lib/validators";
 
@@ -332,6 +333,18 @@ export default function AuthScreen() {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 sm:p-6 selection:bg-white selection:text-black">
       <div className="w-full max-w-md">
+        {/* Top bar with Download App action */}
+        <div className="flex justify-end mb-4">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event("trigger-pwa-install"))}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#121214] border border-[#262626] hover:border-white text-xs font-medium text-neutral-300 hover:text-white transition-all shadow-sm cursor-pointer"
+          >
+            <InstallMobileIcon sx={{ fontSize: 16 }} />
+            <span>Install App</span>
+          </button>
+        </div>
+
         {/* App Title (No logo, No v1.0) */}
         <div className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white select-none">
