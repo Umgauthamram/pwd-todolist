@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
@@ -10,9 +10,7 @@ import Tooltip from "@mui/material/Tooltip";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import {
-  Menu as MenuIcon,
   Search as SearchIcon,
-  Refresh as RefreshIcon,
   ViewStream as ViewStreamIcon,
   GridView as GridViewIcon,
   SettingsOutlined as SettingsOutlinedIcon,
@@ -21,7 +19,6 @@ import {
   LockOpenOutlined as LockOpenOutlinedIcon,
   ArchiveOutlined as ArchiveOutlinedIcon,
   DeleteOutlined as DeleteOutlinedIcon,
-  Logout as LogoutIcon,
   SecurityOutlined as SecurityOutlinedIcon,
   LabelOutlined as LabelOutlinedIcon,
   DeleteForever as DeleteForeverIcon,
@@ -50,9 +47,14 @@ export default function HomePage() {
 
   const [activeTab, setActiveTab] = useState<NavItem>("notes");
   const [isGridView, setIsGridView] = useState<boolean>(true);
-  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
+
+  // Pull down to reload state
+  const [pullY, setPullY] = useState<number>(0);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const touchStartY = useRef<number>(0);
+  const mainScrollRef = useRef<HTMLDivElement | null>(null);
 
   // Public notes state
   const [notes, setNotes] = useState<NoteItem[]>([]);
@@ -113,6 +115,49 @@ export default function HomePage() {
       setLoadingPrivateNotes(false);
     }
   }, [user, isPrivateUnlocked, setIsPrivateUnlocked]);
+
+  // Scroll down to reload (Pull-to-refresh) handler
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      if (activeTab === "private" && isPrivateUnlocked) {
+        await fetchPrivateNotes();
+      } else {
+        await fetchPublicNotes();
+      }
+    } finally {
+      setTimeout(() => {
+        setIsRefreshing(false);
+        setPullY(0);
+      }, 500);
+    }
+  }, [activeTab, isPrivateUnlocked, fetchPrivateNotes, fetchPublicNotes]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (mainScrollRef.current && mainScrollRef.current.scrollTop === 0) {
+      touchStartY.current = e.touches[0].clientY;
+    } else {
+      touchStartY.current = 0;
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartY.current > 0 && mainScrollRef.current && mainScrollRef.current.scrollTop === 0) {
+      const diff = e.touches[0].clientY - touchStartY.current;
+      if (diff > 0) {
+        setPullY(Math.min(diff * 0.45, 80));
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (pullY > 45 && !isRefreshing) {
+      handleRefresh();
+    } else {
+      setPullY(0);
+    }
+    touchStartY.current = 0;
+  };
 
   useEffect(() => {
     if (user) {
@@ -247,27 +292,9 @@ export default function HomePage() {
     }
   };
 
-  // Nav Item Click with Private Space Gating
+  // Nav Item Click (Private space keypad is optional, opens only after clicking the unlock button)
   const handleNavClick = (id: NavItem) => {
     setSelectedLabel(null);
-
-    if (id === "private") {
-      if (!user?.hasPin) {
-        setPinModalMode("setup");
-        setPinModalOpen(true);
-        return;
-      }
-
-      if (!isPrivateUnlocked) {
-        setPinModalMode("enter");
-        setPinModalOpen(true);
-        return;
-      }
-
-      setActiveTab("private");
-      return;
-    }
-
     setActiveTab(id);
   };
 
@@ -377,31 +404,10 @@ export default function HomePage() {
 
   return (
     <Box className="min-h-screen bg-black text-white flex flex-col selection:bg-white selection:text-black">
-      {/* Top Navbar */}
-      <header className="sticky top-0 z-40 h-16 border-b border-[#262626] bg-black/95 backdrop-blur-md px-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <IconButton
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="text-neutral-400 hover:text-white hover:bg-neutral-900"
-            size="medium"
-            aria-label="Toggle navigation menu"
-          >
-            <MenuIcon />
-          </IconButton>
-
-          {/* REQUIREMENT 2: REMOVE THE LOGO, V1.0 */}
-          <div
-            onClick={() => setActiveTab("notes")}
-            className="select-none cursor-pointer"
-          >
-            <span className="text-xl font-bold tracking-tight text-white">
-              Beginning
-            </span>
-          </div>
-        </div>
-
+      {/* Top Navbar (without app name, without reload button) */}
+      <header className="sticky top-0 z-40 h-16 border-b border-[#262626] bg-black/95 backdrop-blur-md px-4 flex items-center justify-between gap-3">
         {/* Search Bar */}
-        <div className="flex-1 max-w-2xl mx-4 hidden md:block">
+        <div className="flex-1 max-w-2xl">
           <div className="flex items-center w-full bg-[#0e0e10] border border-[#262626] hover:border-neutral-500 focus-within:border-white rounded-xl px-3 py-1.5 transition-all">
             <SearchIcon className="text-neutral-400 mr-2" fontSize="small" />
             <InputBase
@@ -427,21 +433,8 @@ export default function HomePage() {
         </div>
 
         {/* Action Controls & Authentication Profile */}
-        <div className="flex items-center gap-1 sm:gap-3">
-          <Tooltip title="Refresh Notes">
-            <IconButton
-              onClick={() => {
-                if (activeTab === "private") fetchPrivateNotes();
-                else fetchPublicNotes();
-              }}
-              className="text-neutral-400 hover:text-white hover:bg-neutral-900"
-              size="small"
-            >
-              <RefreshIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-
-          <Tooltip title={isGridView ? "List view" : "Grid view"}>
+        <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+          <Tooltip title={isGridView ? "Switch to list view" : "Switch to grid view"}>
             <IconButton
               onClick={() => setIsGridView(!isGridView)}
               className="text-neutral-400 hover:text-white hover:bg-neutral-900"
@@ -451,12 +444,13 @@ export default function HomePage() {
             </IconButton>
           </Tooltip>
 
-          {/* User Profile & Logout */}
+          {/* User Profile (Clicking opens Settings - Logout is inside Settings) */}
           <div className="flex items-center gap-2 pl-2 border-l border-[#262626]">
-            <Tooltip title={`Signed in as ${user.email}`}>
-              <div
+            <Tooltip title={`Signed in as ${user.email} (Open Settings)`}>
+              <button
+                type="button"
                 onClick={() => setActiveTab("settings")}
-                className="flex items-center gap-2 cursor-pointer bg-[#0e0e10] hover:bg-neutral-900 border border-[#262626] px-2.5 py-1 rounded-full transition-all"
+                className="flex items-center gap-2 cursor-pointer bg-[#0e0e10] hover:bg-neutral-900 border border-[#262626] hover:border-neutral-500 px-2.5 py-1 rounded-full transition-all"
               >
                 <div className="w-6 h-6 rounded-full bg-white text-black font-bold text-xs flex items-center justify-center">
                   {user.email.charAt(0).toUpperCase()}
@@ -464,127 +458,178 @@ export default function HomePage() {
                 <span className="text-xs font-medium text-white hidden sm:inline max-w-[120px] truncate">
                   {user.email.split("@")[0]}
                 </span>
-              </div>
-            </Tooltip>
-
-            <Tooltip title="Sign Out">
-              <IconButton
-                onClick={logout}
-                size="small"
-                className="text-neutral-400 hover:text-white hover:bg-neutral-900"
-              >
-                <LogoutIcon fontSize="small" />
-              </IconButton>
+              </button>
             </Tooltip>
           </div>
         </div>
       </header>
 
-      {/* Main Workspace Body */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left Sidebar */}
-        <aside
-          className={`transition-all duration-300 border-r border-[#262626] bg-black flex flex-col justify-between py-4 ${
-            sidebarOpen ? "w-64 px-3" : "w-16 px-2"
-          }`}
-        >
-          <div className="space-y-6">
-            <nav className="space-y-1">
-              {navItems.map((item) => {
-                const isActive = activeTab === item.id && !selectedLabel;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleNavClick(item.id)}
-                    className={`w-full flex items-center gap-4 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+      {/* REQUIREMENT 1: Top Bar Navigation (replacing sidebar) */}
+      <nav aria-label="Main Navigation" className="sticky top-16 z-30 bg-black/95 backdrop-blur-md border-b border-[#262626] px-4 py-2 flex items-center justify-between gap-3 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 min-w-0">
+          {navItems.map((item) => {
+            const isActive = activeTab === item.id && !selectedLabel;
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleNavClick(item.id)}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all shrink-0 cursor-pointer ${
+                  isActive
+                    ? "bg-white text-black font-semibold shadow-sm"
+                    : "text-neutral-400 hover:text-white hover:bg-neutral-900 border border-transparent hover:border-[#262626]"
+                }`}
+              >
+                <span className={isActive ? "text-black" : "text-neutral-400"}>
+                  {item.icon}
+                </span>
+                <span className="whitespace-nowrap">{item.label}</span>
+                {item.badge && (
+                  <span
+                    className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
                       isActive
-                        ? "bg-white text-black font-semibold shadow-sm"
-                        : "text-neutral-400 hover:text-white hover:bg-neutral-900"
+                        ? "bg-black text-white"
+                        : "bg-neutral-900 text-neutral-300 border border-[#262626]"
                     }`}
                   >
-                    <span className={isActive ? "text-black" : "text-neutral-400"}>
-                      {item.icon}
-                    </span>
-                    {sidebarOpen && (
-                      <div className="flex-1 flex items-center justify-between">
-                        <span className="truncate">{item.label}</span>
-                        {item.badge && (
-                          <span
-                            className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
-                              isActive
-                                ? "bg-black text-white"
-                                : "bg-neutral-900 text-neutral-300 border border-[#262626]"
-                            }`}
-                          >
-                            {item.badge}
-                          </span>
-                        )}
-                        {item.count !== undefined && item.count > 0 && (
-                          <span
-                            className={`text-xs font-mono font-medium ${
-                              isActive ? "text-neutral-700" : "text-neutral-500"
-                            }`}
-                          >
-                            {item.count}
-                          </span>
-                        )}
-                      </div>
-                    )}
+                    {item.badge}
+                  </span>
+                )}
+                {item.count !== undefined && item.count > 0 && (
+                  <span
+                    className={`text-xs font-mono font-medium ${
+                      isActive ? "text-neutral-700" : "text-neutral-500"
+                    }`}
+                  >
+                    {item.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+
+          {/* Labels horizontal chips */}
+          {allLabels.length > 0 && (
+            <div className="flex items-center gap-1.5 pl-2 border-l border-[#262626]">
+              {allLabels.map((lbl) => {
+                const isLabelActive = selectedLabel === lbl;
+                return (
+                  <button
+                    key={lbl}
+                    onClick={() => setSelectedLabel(isLabelActive ? null : lbl)}
+                    className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 cursor-pointer ${
+                      isLabelActive
+                        ? "bg-white text-black font-semibold"
+                        : "text-neutral-400 hover:text-white hover:bg-neutral-900 border border-[#262626]"
+                    }`}
+                  >
+                    <LabelOutlinedIcon sx={{ fontSize: 13 }} />
+                    <span>#{lbl}</span>
                   </button>
                 );
               })}
-            </nav>
-
-            {/* Labels Navigation */}
-            {sidebarOpen && allLabels.length > 0 && (
-              <div className="pt-3 border-t border-[#262626] space-y-1">
-                <div className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
-                  Labels
-                </div>
-                {allLabels.map((lbl) => {
-                  const isLabelActive = selectedLabel === lbl;
-                  return (
-                    <button
-                      key={lbl}
-                      onClick={() => setSelectedLabel(isLabelActive ? null : lbl)}
-                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                        isLabelActive
-                          ? "bg-white text-black font-semibold"
-                          : "text-neutral-400 hover:text-white hover:bg-neutral-900"
-                      }`}
-                    >
-                      <LabelOutlinedIcon fontSize="small" />
-                      <span className="truncate">#{lbl}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Sidebar Footer */}
-          {sidebarOpen && (
-            <div className="p-3 rounded-xl bg-[#0e0e10] border border-[#262626] text-xs text-neutral-400 space-y-1">
-              <div className="flex items-center gap-1.5 text-white font-medium">
-                <SecurityOutlinedIcon fontSize="inherit" />
-                <span>Beginning Space</span>
-              </div>
-              <p className="text-[11px] text-neutral-500">
-                {user?.hasPin
-                  ? isPrivateUnlocked
-                    ? "Private space is currently unlocked."
-                    : "Private notes are locked behind PIN."
-                  : "Private space PIN is ready for configuration."}
-              </p>
             </div>
           )}
-        </aside>
+        </div>
 
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        {/* Mobile Search Input */}
+        <div className="md:hidden flex-1 max-w-[170px] shrink-0">
+          <div className="flex items-center bg-[#0e0e10] border border-[#262626] rounded-xl px-2 py-1">
+            <SearchIcon className="text-neutral-500 mr-1" sx={{ fontSize: 14 }} />
+            <InputBase
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full text-xs text-white"
+            />
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Workspace Body (Full-width canvas without sidebar, pull-down to reload) */}
+      <div
+        ref={mainScrollRef}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        className="flex-1 w-full overflow-y-auto"
+      >
+        <main className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
+          {/* Scroll down to reload pull indicator (Material UI CircularProgress) */}
+          <div
+            style={{
+              height: isRefreshing ? "56px" : `${pullY}px`,
+              opacity: isRefreshing || pullY > 15 ? 1 : 0,
+              transition: isRefreshing ? "height 0.2s ease" : "none",
+            }}
+            className="flex items-center justify-center overflow-hidden transition-opacity mb-4"
+          >
+            <div className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-[#121214] border border-[#262626] shadow-xl">
+              <CircularProgress
+                size={18}
+                variant={isRefreshing ? "indeterminate" : "determinate"}
+                value={isRefreshing ? undefined : Math.min((pullY / 45) * 100, 100)}
+                sx={{ color: "#ffffff" }}
+              />
+              <span className="text-xs font-medium text-neutral-300">
+                {isRefreshing
+                  ? "Reloading notes..."
+                  : pullY > 45
+                  ? "Release to reload"
+                  : "Pull down to reload"}
+              </span>
+            </div>
+          </div>
+
           <div className="max-w-5xl mx-auto space-y-8">
-            {/* PRIVATE SPACE ACTIVE BANNER */}
-            {activeTab === "private" && (
+            {/* REQUIREMENT 1: PRIVATE SPACE LOCKED STATE (Keypad is optional, opens ONLY after clicking button) */}
+            {activeTab === "private" && !isPrivateUnlocked && (
+              <div className="text-center py-16 px-4 max-w-md mx-auto space-y-6">
+                <div className="w-20 h-20 mx-auto rounded-3xl bg-[#0e0e10] border border-[#262626] flex items-center justify-center text-white shadow-2xl">
+                  <LockOutlinedIcon sx={{ fontSize: 40 }} />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-xl font-bold text-white">Private Space</h2>
+                  <p className="text-xs text-neutral-400 leading-relaxed">
+                    {user?.hasPin
+                      ? "Your private notes are encrypted and locked behind a 4-digit PIN. Tap below to enter your PIN."
+                      : "Configure your 4-digit PIN to activate your encrypted Private Space."}
+                  </p>
+                </div>
+
+                <div className="pt-2">
+                  <Button
+                    variant="contained"
+                    size="medium"
+                    onClick={() => {
+                      if (!user?.hasPin) {
+                        setPinModalMode("setup");
+                      } else {
+                        setPinModalMode("enter");
+                      }
+                      setPinModalOpen(true);
+                    }}
+                    startIcon={user?.hasPin ? <LockOpenOutlinedIcon /> : <LockOutlinedIcon />}
+                    sx={{
+                      backgroundColor: "#ffffff",
+                      color: "#000000",
+                      fontWeight: 600,
+                      fontSize: "13px",
+                      textTransform: "none",
+                      borderRadius: "12px",
+                      px: 3.5,
+                      py: 1.2,
+                      "&:hover": { backgroundColor: "#e5e5e5" },
+                      boxShadow: "0 4px 14px rgba(255, 255, 255, 0.15)",
+                    }}
+                  >
+                    {user?.hasPin ? "Unlock Private Space" : "Configure 4-Digit PIN"}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* PRIVATE SPACE: UNLOCKED ACTIVE BANNER */}
+            {activeTab === "private" && isPrivateUnlocked && (
               <div className="p-4 sm:p-5 rounded-2xl bg-[#0e0e10] border border-[#262626] shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-neutral-700 flex items-center justify-center text-white shadow-md">
@@ -593,9 +638,6 @@ export default function HomePage() {
                   <div>
                     <h2 className="text-base font-bold text-white flex items-center gap-2">
                       Private Space
-                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-neutral-900 text-neutral-300 border border-neutral-700 font-normal">
-                        PIN Verified
-                      </span>
                     </h2>
                     <p className="text-xs text-neutral-400">
                       These notes are completely isolated from your public workspace and encrypted with your 4-digit PIN.
@@ -641,8 +683,8 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* Note Creator Bar (Visible in Notes or Private views) */}
-            {(activeTab === "notes" || activeTab === "private") && !selectedLabel && (
+            {/* Note Creator Bar (Visible in Notes, or in Private Space only when unlocked) */}
+            {(activeTab === "notes" || (activeTab === "private" && isPrivateUnlocked)) && !selectedLabel && (
               <NoteCreator onSave={handleCreateNote} />
             )}
 
@@ -692,8 +734,8 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* MAIN CANVAS: PINNED & OTHERS SECTIONS (Shared between Notes & Private Space) */}
-            {(activeTab === "notes" || activeTab === "private") && (
+            {/* MAIN CANVAS: PINNED & OTHERS SECTIONS */}
+            {(activeTab === "notes" || (activeTab === "private" && isPrivateUnlocked)) && (
               <div className="space-y-8">
                 {/* Pinned Section */}
                 {pinnedNotes.length > 0 && (
@@ -705,11 +747,11 @@ export default function HomePage() {
                       Pinned
                     </Typography>
                     <div
-                      className={`grid gap-4 ${
+                      className={
                         isGridView
-                          ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-                          : "grid-cols-1 max-w-2xl mx-auto"
-                      }`}
+                          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start"
+                          : "flex flex-col gap-3 max-w-2xl mx-auto w-full"
+                      }
                     >
                       {pinnedNotes.map((note) => (
                         <NoteCard
@@ -741,11 +783,11 @@ export default function HomePage() {
                       </Typography>
                     )}
                     <div
-                      className={`grid gap-4 ${
+                      className={
                         isGridView
-                          ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-                          : "grid-cols-1 max-w-2xl mx-auto"
-                      }`}
+                          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start"
+                          : "flex flex-col gap-3 max-w-2xl mx-auto w-full"
+                      }
                     >
                       {otherNotes.map((note) => (
                         <NoteCard
@@ -797,11 +839,11 @@ export default function HomePage() {
 
                 {filteredNotes.length > 0 ? (
                   <div
-                    className={`grid gap-4 ${
+                    className={
                       isGridView
-                        ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-                        : "grid-cols-1 max-w-2xl mx-auto"
-                    }`}
+                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start"
+                        : "flex flex-col gap-3 max-w-2xl mx-auto w-full"
+                    }
                   >
                     {filteredNotes.map((note) => (
                       <NoteCard
@@ -843,11 +885,11 @@ export default function HomePage() {
 
                 {filteredNotes.length > 0 ? (
                   <div
-                    className={`grid gap-4 ${
+                    className={
                       isGridView
-                        ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-                        : "grid-cols-1 max-w-2xl mx-auto"
-                    }`}
+                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start"
+                        : "flex flex-col gap-3 max-w-2xl mx-auto w-full"
+                    }
                   >
                     {filteredNotes.map((note) => (
                       <NoteCard

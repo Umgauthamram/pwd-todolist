@@ -44,6 +44,8 @@ declare module "@mui/icons-material" {
   export const CloudDoneOutlined: SvgIconComponent;
   export const CloudOffOutlined: SvgIconComponent;
   export const CloudSyncOutlined: SvgIconComponent;
+  export const ExpandMore: SvgIconComponent;
+  export const KeyboardArrowDown: SvgIconComponent;
 
   const icons: Record<string, SvgIconComponent>;
   export default icons;

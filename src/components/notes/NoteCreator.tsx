@@ -12,7 +12,6 @@ import {
   LabelOutlined as LabelOutlinedIcon,
   CheckBoxOutlined as CheckBoxOutlinedIcon,
   BrushOutlined as BrushOutlinedIcon,
-  ImageOutlined as ImageOutlinedIcon,
   Close as CloseIcon,
 } from "@mui/icons-material";
 import ColorPicker from "./ColorPicker";
@@ -137,11 +136,6 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
             <Tooltip title="New note with drawing">
               <IconButton size="small" className="text-neutral-400 hover:text-white">
                 <BrushOutlinedIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="New note with image">
-              <IconButton size="small" className="text-neutral-400 hover:text-white">
-                <ImageOutlinedIcon fontSize="small" />
               </IconButton>
             </Tooltip>
           </div>

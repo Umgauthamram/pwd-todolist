@@ -74,8 +74,8 @@ export default function NoteCard({
         backgroundColor: note.color || "#0e0e10",
         borderColor,
       }}
-      className={`group relative rounded-2xl border transition-all duration-200 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-between p-4 ${
-        viewMode === "list" ? "w-full" : "w-full"
+      className={`group relative rounded-2xl border transition-all duration-200 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-between p-4 w-full h-fit ${
+        viewMode === "list" ? "max-w-2xl mx-auto" : ""
       }`}
     >
       {/* Top Row: Title & Pin Button */}
