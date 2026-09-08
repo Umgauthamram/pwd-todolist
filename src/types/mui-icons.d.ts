@@ -41,6 +41,9 @@ declare module "@mui/icons-material" {
   export const BackspaceOutlined: SvgIconComponent;
   export const LockResetOutlined: SvgIconComponent;
   export const LockOpenOutlined: SvgIconComponent;
+  export const CloudDoneOutlined: SvgIconComponent;
+  export const CloudOffOutlined: SvgIconComponent;
+  export const CloudSyncOutlined: SvgIconComponent;
 
   const icons: Record<string, SvgIconComponent>;
   export default icons;

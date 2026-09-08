@@ -6,6 +6,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { darkTheme } from "./theme";
 import { AuthProvider } from "@/context/AuthContext";
 import AuthModal from "@/components/auth/AuthModal";
+import PwaRegistrar from "@/components/pwa/PwaRegistrar";
 
 interface ThemeRegistryProps {
   children: ReactNode;
@@ -18,6 +19,7 @@ export default function ThemeRegistry({ children }: ThemeRegistryProps) {
       <AuthProvider>
         {children}
         <AuthModal />
+        <PwaRegistrar />
       </AuthProvider>
     </ThemeProvider>
   );

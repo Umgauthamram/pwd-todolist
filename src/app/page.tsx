@@ -33,6 +33,7 @@ import NoteCreator, { CreateNotePayload } from "@/components/notes/NoteCreator";
 import NoteCard, { NoteItem } from "@/components/notes/NoteCard";
 import NoteModal from "@/components/notes/NoteModal";
 import PinModal, { PinModalMode } from "@/components/private-space/PinModal";
+import SettingsView from "@/components/settings/SettingsView";
 
 type NavItem = "notes" | "private" | "archive" | "trash" | "settings";
 
@@ -1042,32 +1043,7 @@ export default function HomePage() {
             )}
 
             {/* SETTINGS VIEW */}
-            {activeTab === "settings" && (
-              <div className="p-6 rounded-2xl bg-[#1E293B] border border-[#334155] space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
-                    <SettingsOutlinedIcon />
-                  </div>
-                  <div>
-                    <h2 className="text-base font-semibold text-white">Settings &amp; Account</h2>
-                    <p className="text-xs text-[#94A3B8]">Manage account profile, password, and 4-digit PIN</p>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-[#334155] space-y-3 text-xs text-[#94A3B8]">
-                  <p>
-                    {user ? (
-                      <>Account: <span className="font-mono text-white">{user.email}</span> (Verified)</>
-                    ) : (
-                      <>Guest Mode: Sign in to sync notes and enable private space.</>
-                    )}
-                  </p>
-                  <p className="text-amber-400 font-medium">
-                    Private Space PIN: {user?.hasPin ? "Active & Configured" : "Not Set"}
-                  </p>
-                </div>
-              </div>
-            )}
+            {activeTab === "settings" && <SettingsView />}
           </div>
         </main>
       </div>
