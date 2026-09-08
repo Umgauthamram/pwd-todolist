@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     const {
       title = "",
       content = "",
-      color = "#1E293B",
+      color = "#0e0e10",
       isPinned = false,
       isArchived = false,
       isTrashed = false,

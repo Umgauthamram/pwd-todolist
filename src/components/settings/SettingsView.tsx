@@ -158,23 +158,23 @@ export default function SettingsView() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Page Header */}
-      <div className="flex items-center gap-3 pb-2 border-b border-[#334155]">
-        <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
+      <div className="flex items-center gap-3 pb-2 border-b border-[#262626]">
+        <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-[#262626] flex items-center justify-center text-white">
           <SettingsOutlinedIcon />
         </div>
         <div>
           <h1 className="text-xl font-bold text-white">Settings &amp; Preferences</h1>
-          <p className="text-xs text-[#94A3B8]">
+          <p className="text-xs text-neutral-400">
             Manage your account security, 4-digit PIN configuration, and PWA offline storage.
           </p>
         </div>
       </div>
 
       {/* 1. Account Profile Card */}
-      <div className="p-5 sm:p-6 rounded-2xl bg-[#1E293B] border border-[#334155] shadow-lg space-y-4">
+      <div className="p-5 sm:p-6 rounded-2xl bg-[#0e0e10] border border-[#262626] shadow-lg space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <PersonIcon className="text-sky-400" />
+            <PersonIcon className="text-white" />
             <h2 className="text-base font-semibold text-white">Account Profile</h2>
           </div>
           {user ? (
@@ -183,9 +183,9 @@ export default function SettingsView() {
               size="small"
               icon={<CheckCircleIcon sx={{ fontSize: 14 }} />}
               sx={{
-                backgroundColor: "rgba(52, 211, 153, 0.1)",
-                color: "#34D399",
-                border: "1px solid rgba(52, 211, 153, 0.3)",
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                color: "#ffffff",
+                border: "1px solid rgba(255, 255, 255, 0.2)",
                 fontSize: "11px",
               }}
             />
@@ -194,9 +194,9 @@ export default function SettingsView() {
               label="Guest Mode"
               size="small"
               sx={{
-                backgroundColor: "rgba(148, 163, 184, 0.1)",
-                color: "#94A3B8",
-                border: "1px solid #334155",
+                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                color: "#a1a1aa",
+                border: "1px solid #262626",
                 fontSize: "11px",
               }}
             />
@@ -206,18 +206,18 @@ export default function SettingsView() {
         {user ? (
           <div className="space-y-3 text-xs">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="p-3 rounded-xl bg-[#0F172A] border border-[#334155]">
-                <span className="text-[#94A3B8]">Email Address:</span>
+              <div className="p-3 rounded-xl bg-black border border-[#262626]">
+                <span className="text-neutral-400">Email Address:</span>
                 <p className="font-mono text-white text-sm font-medium mt-0.5">{user.email}</p>
               </div>
-              <div className="p-3 rounded-xl bg-[#0F172A] border border-[#334155]">
-                <span className="text-[#94A3B8]">User ID:</span>
-                <p className="font-mono text-[#94A3B8] text-xs truncate mt-0.5">{user.id}</p>
+              <div className="p-3 rounded-xl bg-black border border-[#262626]">
+                <span className="text-neutral-400">User ID:</span>
+                <p className="font-mono text-neutral-400 text-xs truncate mt-0.5">{user.id}</p>
               </div>
             </div>
 
             <div className="pt-2 flex items-center justify-between">
-              <span className="text-[#94A3B8]">Ready to exit your session?</span>
+              <span className="text-neutral-400">Ready to exit your session?</span>
               <Button
                 variant="outlined"
                 color="error"
@@ -230,14 +230,14 @@ export default function SettingsView() {
             </div>
           </div>
         ) : (
-          <div className="p-4 rounded-xl bg-[#0F172A] border border-[#334155] text-xs text-[#94A3B8] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="p-4 rounded-xl bg-black border border-[#262626] text-xs text-neutral-400 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <span>You are currently browsing as a guest. Create an account to sync notes across devices.</span>
             <div className="flex items-center gap-2">
               <Button
                 variant="outlined"
                 size="small"
                 onClick={() => openAuthModal("login")}
-                sx={{ borderColor: "#334155", color: "#F8FAFC", textTransform: "none", fontSize: "12px" }}
+                sx={{ borderColor: "#262626", color: "#ffffff", textTransform: "none", fontSize: "12px" }}
               >
                 Sign In
               </Button>
@@ -245,7 +245,7 @@ export default function SettingsView() {
                 variant="contained"
                 size="small"
                 onClick={() => openAuthModal("register")}
-                sx={{ backgroundColor: "#38BDF8", color: "#0F172A", fontWeight: 600, textTransform: "none", fontSize: "12px" }}
+                sx={{ backgroundColor: "#ffffff", color: "#000000", fontWeight: 600, textTransform: "none", fontSize: "12px", "&:hover": { backgroundColor: "#e5e5e5" } }}
               >
                 Sign Up
               </Button>
@@ -256,24 +256,24 @@ export default function SettingsView() {
 
       {/* 2. Private Space 4-Digit PIN Security Card */}
       {user && (
-        <div className="p-5 sm:p-6 rounded-2xl bg-[#1E293B] border border-[#334155] shadow-lg space-y-4">
+        <div className="p-5 sm:p-6 rounded-2xl bg-[#0e0e10] border border-[#262626] shadow-lg space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <LockOutlinedIcon className="text-amber-400" />
+              <LockOutlinedIcon className="text-white" />
               <h2 className="text-base font-semibold text-white">Private Space 4-Digit PIN</h2>
             </div>
             <span
               className={`text-xs px-2.5 py-0.5 rounded-full font-mono ${
                 user.hasPin
-                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
-                  : "bg-amber-500/10 text-amber-400 border border-amber-500/30"
+                  ? "bg-white/10 text-white border border-white/30"
+                  : "bg-neutral-800 text-neutral-400 border border-neutral-700"
               }`}
             >
               {user.hasPin ? "PIN Configured" : "Not Configured"}
             </span>
           </div>
 
-          <p className="text-xs text-[#94A3B8]">
+          <p className="text-xs text-neutral-400">
             Your 4-digit PIN isolates your private notes. It is encrypted on our servers using Bcrypt and can only be unlocked with the correct numeric code.
           </p>
 
@@ -299,13 +299,13 @@ export default function SettingsView() {
                 setPinModalOpen(true);
               }}
               sx={{
-                backgroundColor: "#F59E0B",
-                color: "#0F172A",
+                backgroundColor: "#ffffff",
+                color: "#000000",
                 fontWeight: 600,
                 fontSize: "12px",
                 textTransform: "none",
                 borderRadius: "8px",
-                "&:hover": { backgroundColor: "#D97706" },
+                "&:hover": { backgroundColor: "#e5e5e5" },
               }}
             >
               {user.hasPin ? "Change 4-Digit PIN" : "Configure 4-Digit PIN"}
@@ -318,12 +318,12 @@ export default function SettingsView() {
                 disabled={pinResetLoading}
                 onClick={handleRequestPinResetEmail}
                 sx={{
-                  borderColor: "rgba(245, 158, 11, 0.4)",
-                  color: "#FBBF24",
+                  borderColor: "#262626",
+                  color: "#ffffff",
                   fontSize: "12px",
                   textTransform: "none",
                   borderRadius: "8px",
-                  "&:hover": { borderColor: "#F59E0B", backgroundColor: "rgba(245, 158, 11, 0.08)" },
+                  "&:hover": { borderColor: "#525252", backgroundColor: "rgba(255, 255, 255, 0.05)" },
                 }}
               >
                 {pinResetLoading ? (
@@ -339,9 +339,9 @@ export default function SettingsView() {
 
       {/* 3. Password Management Card */}
       {user && (
-        <div className="p-5 sm:p-6 rounded-2xl bg-[#1E293B] border border-[#334155] shadow-lg space-y-4">
+        <div className="p-5 sm:p-6 rounded-2xl bg-[#0e0e10] border border-[#262626] shadow-lg space-y-4">
           <div className="flex items-center gap-2.5">
-            <VpnKeyIcon className="text-indigo-400" />
+            <VpnKeyIcon className="text-white" />
             <h2 className="text-base font-semibold text-white">Change Account Password</h2>
           </div>
 
@@ -360,37 +360,37 @@ export default function SettingsView() {
 
           <form onSubmit={handleChangePassword} className="space-y-3 max-w-md">
             <div>
-              <label className="block text-xs font-medium text-[#94A3B8] mb-1">Current Password</label>
+              <label className="block text-xs font-medium text-neutral-400 mb-1">Current Password</label>
               <input
                 type={showPassword ? "text" : "password"}
                 required
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full bg-[#0F172A] border border-[#334155] focus:border-sky-400 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"
+                className="w-full bg-black border border-[#262626] focus:border-white rounded-xl px-3 py-2 text-xs text-white focus:outline-none transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#94A3B8] mb-1">New Password</label>
+              <label className="block text-xs font-medium text-neutral-400 mb-1">New Password</label>
               <input
                 type={showPassword ? "text" : "password"}
                 required
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Minimum 6 characters"
-                className="w-full bg-[#0F172A] border border-[#334155] focus:border-sky-400 rounded-xl px-3 py-2 text-xs text-white focus:outline-none placeholder-[#64748B]"
+                className="w-full bg-black border border-[#262626] focus:border-white rounded-xl px-3 py-2 text-xs text-white focus:outline-none placeholder-neutral-600 transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#94A3B8] mb-1">Confirm New Password</label>
+              <label className="block text-xs font-medium text-neutral-400 mb-1">Confirm New Password</label>
               <input
                 type={showPassword ? "text" : "password"}
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Repeat new password"
-                className="w-full bg-[#0F172A] border border-[#334155] focus:border-sky-400 rounded-xl px-3 py-2 text-xs text-white focus:outline-none placeholder-[#64748B]"
+                className="w-full bg-black border border-[#262626] focus:border-white rounded-xl px-3 py-2 text-xs text-white focus:outline-none placeholder-neutral-600 transition-colors"
               />
             </div>
 
@@ -398,7 +398,7 @@ export default function SettingsView() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="text-xs text-[#94A3B8] hover:text-white flex items-center gap-1"
+                className="text-xs text-neutral-400 hover:text-white flex items-center gap-1"
               >
                 {showPassword ? <VisibilityOffIcon fontSize="inherit" /> : <VisibilityIcon fontSize="inherit" />}
                 <span>{showPassword ? "Hide passwords" : "Show passwords"}</span>
@@ -410,13 +410,13 @@ export default function SettingsView() {
                 size="small"
                 variant="contained"
                 sx={{
-                  backgroundColor: "#38BDF8",
-                  color: "#0F172A",
+                  backgroundColor: "#ffffff",
+                  color: "#000000",
                   fontWeight: 600,
                   fontSize: "12px",
                   textTransform: "none",
                   borderRadius: "8px",
-                  "&:hover": { backgroundColor: "#0284C7" },
+                  "&:hover": { backgroundColor: "#e5e5e5" },
                 }}
               >
                 {passwordLoading ? <CircularProgress size={16} color="inherit" /> : "Update Password"}
@@ -427,17 +427,17 @@ export default function SettingsView() {
       )}
 
       {/* 4. PWA & Offline Storage Card */}
-      <div className="p-5 sm:p-6 rounded-2xl bg-[#1E293B] border border-[#334155] shadow-lg space-y-4">
+      <div className="p-5 sm:p-6 rounded-2xl bg-[#0e0e10] border border-[#262626] shadow-lg space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <CloudSyncOutlinedIcon className="text-teal-400" />
+            <CloudSyncOutlinedIcon className="text-white" />
             <h2 className="text-base font-semibold text-white">PWA &amp; Offline Storage</h2>
           </div>
           <span
             className={`text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1.5 font-medium ${
               isOnline
-                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
-                : "bg-amber-500/10 text-amber-400 border border-amber-500/30"
+                ? "bg-white/10 text-white border border-white/20"
+                : "bg-neutral-800 text-neutral-400 border border-neutral-700"
             }`}
           >
             {isOnline ? (
@@ -452,18 +452,18 @@ export default function SettingsView() {
           </span>
         </div>
 
-        <p className="text-xs text-[#94A3B8]">
+        <p className="text-xs text-neutral-400">
           Beginning leverages Service Workers and Dexie IndexedDB client caching. You can write, browse, and organize notes without an active internet connection.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          <div className="p-3 rounded-xl bg-[#0F172A] border border-[#334155]">
-            <span className="text-[#94A3B8]">IndexedDB Cached Notes:</span>
+          <div className="p-3 rounded-xl bg-black border border-[#262626]">
+            <span className="text-neutral-400">IndexedDB Cached Notes:</span>
             <p className="font-mono text-white text-sm font-medium mt-0.5">{cachedNotesCount} records</p>
           </div>
-          <div className="p-3 rounded-xl bg-[#0F172A] border border-[#334155]">
-            <span className="text-[#94A3B8]">Service Worker State:</span>
-            <p className="font-mono text-emerald-400 text-xs mt-0.5">Active (sw.js v1)</p>
+          <div className="p-3 rounded-xl bg-black border border-[#262626]">
+            <span className="text-neutral-400">Service Worker State:</span>
+            <p className="font-mono text-neutral-300 text-xs mt-0.5">Active (sw.js v1)</p>
           </div>
         </div>
 
@@ -474,12 +474,13 @@ export default function SettingsView() {
               size="small"
               onClick={handleInstallPwa}
               sx={{
-                backgroundColor: "#38BDF8",
-                color: "#0F172A",
+                backgroundColor: "#ffffff",
+                color: "#000000",
                 fontWeight: 600,
                 fontSize: "12px",
                 textTransform: "none",
                 borderRadius: "8px",
+                "&:hover": { backgroundColor: "#e5e5e5" },
               }}
             >
               Install App on Device
@@ -491,12 +492,12 @@ export default function SettingsView() {
             size="small"
             onClick={handleClearCache}
             sx={{
-              borderColor: "#334155",
-              color: "#94A3B8",
+              borderColor: "#262626",
+              color: "#a1a1aa",
               fontSize: "12px",
               textTransform: "none",
               borderRadius: "8px",
-              "&:hover": { borderColor: "#64748B", color: "white" },
+              "&:hover": { borderColor: "#525252", color: "#ffffff" },
             }}
           >
             Clear Local Cache

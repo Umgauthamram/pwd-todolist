@@ -2,10 +2,8 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
 import IconButton from "@mui/material/IconButton";
 import CircularProgress from "@mui/material/CircularProgress";
-import Tooltip from "@mui/material/Tooltip";
 import {
   Close as CloseIcon,
   EmailOutlined as EmailOutlinedIcon,
@@ -74,14 +72,12 @@ export default function AuthModal() {
   }, [authMode, isAuthModalOpen]);
 
   const handleOtpChange = (index: number, val: string) => {
-    // Only accept numeric inputs
     const cleaned = val.replace(/\D/g, "");
     if (!cleaned && val !== "") return;
 
     const newOtp = [...otp];
 
     if (cleaned.length > 1) {
-      // Pasted multi-digit code
       const digits = cleaned.slice(0, 6).split("");
       digits.forEach((d, i) => {
         if (i < 6) newOtp[i] = d;
@@ -95,7 +91,6 @@ export default function AuthModal() {
     newOtp[index] = cleaned;
     setOtp(newOtp);
 
-    // Auto advance focus
     if (cleaned && index < 5) {
       otpInputsRef.current[index + 1]?.focus();
     }
@@ -212,11 +207,11 @@ export default function AuthModal() {
       }
 
       setUser(data.user);
-      setSuccessMsg("Account verified successfully! Welcome to Beginning.");
+      setSuccessMsg("Account verified successfully!");
       setTimeout(() => {
         closeAuthModal();
         window.location.reload();
-      }, 1000);
+      }, 600);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "An unexpected error occurred";
       setError(message);
@@ -313,7 +308,7 @@ export default function AuthModal() {
       setTimeout(() => {
         setAuthMode("login");
         setForgotStep("email");
-      }, 1500);
+      }, 1200);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "An unexpected error occurred";
       setError(message);
@@ -331,12 +326,13 @@ export default function AuthModal() {
       slotProps={{
         paper: {
           sx: {
-            backgroundColor: "#1E293B",
-            color: "#F8FAFC",
+            backgroundColor: "#000000",
+            color: "#ffffff",
             borderRadius: "20px",
-            border: "1px solid #334155",
+            border: "1px solid #262626",
             backgroundImage: "none",
             overflow: "hidden",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.9)",
           },
         },
       }}
@@ -347,40 +343,34 @@ export default function AuthModal() {
           <IconButton
             onClick={closeAuthModal}
             size="small"
-            className="text-[#94A3B8] hover:text-white hover:bg-[#334155]"
+            className="text-neutral-400 hover:text-white hover:bg-neutral-800"
           >
             <CloseIcon fontSize="small" />
           </IconButton>
         </div>
 
-        {/* Brand Header */}
+        {/* Clean Header (No logo, No v1.0) */}
         <div className="text-center mb-6">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-sky-500/20">
-            <LockOutlinedIcon className="text-white" fontSize="medium" />
-          </div>
-          <h2 className="text-xl font-bold tracking-tight text-[#F8FAFC]">
-            {authMode === "login" && "Welcome back to Beginning"}
-            {authMode === "register" && "Create your Account"}
-            {authMode === "verify" && "Verify your Email"}
-            {authMode === "forgot" && "Recover your Account"}
+          <h2 className="text-2xl font-bold tracking-tight text-white select-none">
+            Beginning
           </h2>
-          <p className="text-xs text-[#94A3B8] mt-1">
-            {authMode === "login" && "Sign in to access your notes and secure Private Space"}
-            {authMode === "register" && "Enter your email to receive a 6-digit OTP verification code"}
+          <p className="text-xs text-neutral-400 mt-1">
+            {authMode === "login" && "Sign in to access your notes"}
+            {authMode === "register" && "Create an account with email verification"}
             {authMode === "verify" && `Enter the 6-digit code sent to ${pendingEmail || email}`}
-            {authMode === "forgot" && "Reset your password via single-use email verification code"}
+            {authMode === "forgot" && "Reset your password via email verification code"}
           </p>
         </div>
 
         {/* Alert Banners */}
         {error && (
-          <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
+          <div className="mb-4 p-3 rounded-xl bg-neutral-900 border border-neutral-700 text-red-400 text-xs flex items-center gap-2">
             <span>⚠️</span>
             <span>{error}</span>
           </div>
         )}
         {successMsg && (
-          <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
+          <div className="mb-4 p-3 rounded-xl bg-neutral-900 border border-neutral-700 text-emerald-400 text-xs flex items-center gap-2">
             <CheckCircleIcon fontSize="small" />
             <span>{successMsg}</span>
           </div>
@@ -390,45 +380,45 @@ export default function AuthModal() {
         {authMode === "login" && (
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">Email Address</label>
+              <label className="block text-xs font-medium text-neutral-400 mb-1.5">Email Address</label>
               <div className="relative flex items-center">
-                <EmailOutlinedIcon className="absolute left-3 text-[#94A3B8]" fontSize="small" />
+                <EmailOutlinedIcon className="absolute left-3 text-neutral-500" fontSize="small" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full bg-[#0F172A] border border-[#334155] focus:border-sky-400 rounded-xl pl-10 pr-3 py-2.5 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none transition-colors"
+                  className="w-full bg-[#0e0e10] border border-[#262626] focus:border-white rounded-xl pl-10 pr-3 py-2.5 text-sm text-white placeholder-neutral-600 focus:outline-none transition-colors"
                 />
               </div>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-medium text-[#94A3B8]">Password</label>
+                <label className="text-xs font-medium text-neutral-400">Password</label>
                 <button
                   type="button"
                   onClick={() => setAuthMode("forgot")}
-                  className="text-xs text-sky-400 hover:text-sky-300 transition-colors"
+                  className="text-xs text-neutral-400 hover:text-white transition-colors"
                 >
                   Forgot password?
                 </button>
               </div>
               <div className="relative flex items-center">
-                <LockOutlinedIcon className="absolute left-3 text-[#94A3B8]" fontSize="small" />
+                <LockOutlinedIcon className="absolute left-3 text-neutral-500" fontSize="small" />
                 <input
                   type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-[#0F172A] border border-[#334155] focus:border-sky-400 rounded-xl pl-10 pr-10 py-2.5 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none transition-colors"
+                  className="w-full bg-[#0e0e10] border border-[#262626] focus:border-white rounded-xl pl-10 pr-10 py-2.5 text-sm text-white placeholder-neutral-600 focus:outline-none transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 text-[#94A3B8] hover:text-white"
+                  className="absolute right-3 text-neutral-500 hover:text-white"
                 >
                   {showPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
                 </button>
@@ -438,19 +428,19 @@ export default function AuthModal() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 text-white font-semibold text-sm shadow-lg shadow-sky-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2"
             >
-              {loading ? <CircularProgress size={18} color="inherit" /> : "Sign In"}
+              {loading ? <CircularProgress size={18} sx={{ color: "#000000" }} /> : "Sign In"}
             </button>
 
-            <div className="text-center text-xs text-[#94A3B8] pt-2">
+            <div className="text-center text-xs text-neutral-400 pt-2">
               Don&apos;t have an account?{" "}
               <button
                 type="button"
                 onClick={() => setAuthMode("register")}
-                className="text-sky-400 hover:text-sky-300 font-medium"
+                className="text-white hover:underline font-medium"
               >
-                Create an account
+                Sign Up
               </button>
             </div>
           </form>
@@ -460,36 +450,36 @@ export default function AuthModal() {
         {authMode === "register" && (
           <form onSubmit={handleRegister} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">Email Address</label>
+              <label className="block text-xs font-medium text-neutral-400 mb-1.5">Email Address</label>
               <div className="relative flex items-center">
-                <EmailOutlinedIcon className="absolute left-3 text-[#94A3B8]" fontSize="small" />
+                <EmailOutlinedIcon className="absolute left-3 text-neutral-500" fontSize="small" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full bg-[#0F172A] border border-[#334155] focus:border-sky-400 rounded-xl pl-10 pr-3 py-2.5 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none transition-colors"
+                  className="w-full bg-[#0e0e10] border border-[#262626] focus:border-white rounded-xl pl-10 pr-3 py-2.5 text-sm text-white placeholder-neutral-600 focus:outline-none transition-colors"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">Password</label>
+              <label className="block text-xs font-medium text-neutral-400 mb-1.5">Password</label>
               <div className="relative flex items-center">
-                <LockOutlinedIcon className="absolute left-3 text-[#94A3B8]" fontSize="small" />
+                <LockOutlinedIcon className="absolute left-3 text-neutral-500" fontSize="small" />
                 <input
                   type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Minimum 6 characters"
-                  className="w-full bg-[#0F172A] border border-[#334155] focus:border-sky-400 rounded-xl pl-10 pr-10 py-2.5 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none transition-colors"
+                  className="w-full bg-[#0e0e10] border border-[#262626] focus:border-white rounded-xl pl-10 pr-10 py-2.5 text-sm text-white placeholder-neutral-600 focus:outline-none transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 text-[#94A3B8] hover:text-white"
+                  className="absolute right-3 text-neutral-500 hover:text-white"
                 >
                   {showPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
                 </button>
@@ -497,16 +487,16 @@ export default function AuthModal() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">Confirm Password</label>
+              <label className="block text-xs font-medium text-neutral-400 mb-1.5">Confirm Password</label>
               <div className="relative flex items-center">
-                <LockOutlinedIcon className="absolute left-3 text-[#94A3B8]" fontSize="small" />
+                <LockOutlinedIcon className="absolute left-3 text-neutral-500" fontSize="small" />
                 <input
                   type={showPassword ? "text" : "password"}
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Repeat your password"
-                  className="w-full bg-[#0F172A] border border-[#334155] focus:border-sky-400 rounded-xl pl-10 pr-3 py-2.5 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none transition-colors"
+                  className="w-full bg-[#0e0e10] border border-[#262626] focus:border-white rounded-xl pl-10 pr-3 py-2.5 text-sm text-white placeholder-neutral-600 focus:outline-none transition-colors"
                 />
               </div>
             </div>
@@ -514,19 +504,19 @@ export default function AuthModal() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 text-white font-semibold text-sm shadow-lg shadow-sky-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2"
             >
-              {loading ? <CircularProgress size={18} color="inherit" /> : "Send 6-Digit OTP"}
+              {loading ? <CircularProgress size={18} sx={{ color: "#000000" }} /> : "Send 6-Digit OTP"}
             </button>
 
-            <div className="text-center text-xs text-[#94A3B8] pt-2">
+            <div className="text-center text-xs text-neutral-400 pt-2">
               Already have an account?{" "}
               <button
                 type="button"
                 onClick={() => setAuthMode("login")}
-                className="text-sky-400 hover:text-sky-300 font-medium"
+                className="text-white hover:underline font-medium"
               >
-                Sign in
+                Sign In
               </button>
             </div>
           </form>
@@ -548,7 +538,7 @@ export default function AuthModal() {
                   value={digit}
                   onChange={(e) => handleOtpChange(idx, e.target.value)}
                   onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                  className="w-11 h-13 text-center text-xl font-bold bg-[#0F172A] border border-[#334155] focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 rounded-xl text-sky-400 focus:outline-none transition-all"
+                  className="w-11 h-13 text-center text-xl font-bold bg-[#0e0e10] border border-[#262626] focus:border-white rounded-xl text-white focus:outline-none transition-all"
                 />
               ))}
             </div>
@@ -556,25 +546,25 @@ export default function AuthModal() {
             <button
               type="submit"
               disabled={loading || otp.join("").length !== 6}
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 text-white font-semibold text-sm shadow-lg shadow-sky-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
-              {loading ? <CircularProgress size={18} color="inherit" /> : "Verify & Log In"}
+              {loading ? <CircularProgress size={18} sx={{ color: "#000000" }} /> : "Verify & Sign In"}
             </button>
 
             <div className="flex items-center justify-between text-xs pt-1">
               <button
                 type="button"
                 onClick={() => setAuthMode("register")}
-                className="text-[#94A3B8] hover:text-white flex items-center gap-1"
+                className="text-neutral-400 hover:text-white flex items-center gap-1"
               >
-                <ArrowBackIcon fontSize="inherit" /> Change Email
+                <ArrowBackIcon fontSize="inherit" /> Back
               </button>
 
               <button
                 type="button"
                 disabled={resendCooldown > 0 || loading}
                 onClick={handleResendOtp}
-                className="text-sky-400 hover:text-sky-300 disabled:text-[#64748B] flex items-center gap-1 font-medium"
+                className="text-white hover:text-neutral-300 disabled:text-neutral-600 flex items-center gap-1 font-medium"
               >
                 <RefreshIcon fontSize="inherit" />
                 {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend OTP"}
@@ -589,16 +579,16 @@ export default function AuthModal() {
             {forgotStep === "email" ? (
               <form onSubmit={handleRequestPasswordReset} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">Email Address</label>
+                  <label className="block text-xs font-medium text-neutral-400 mb-1.5">Email Address</label>
                   <div className="relative flex items-center">
-                    <EmailOutlinedIcon className="absolute left-3 text-[#94A3B8]" fontSize="small" />
+                    <EmailOutlinedIcon className="absolute left-3 text-neutral-500" fontSize="small" />
                     <input
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="w-full bg-[#0F172A] border border-[#334155] focus:border-sky-400 rounded-xl pl-10 pr-3 py-2.5 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none transition-colors"
+                      className="w-full bg-[#0e0e10] border border-[#262626] focus:border-white rounded-xl pl-10 pr-3 py-2.5 text-sm text-white placeholder-neutral-600 focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
@@ -606,16 +596,16 @@ export default function AuthModal() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 text-white font-semibold text-sm shadow-lg shadow-sky-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="w-full py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
-                  {loading ? <CircularProgress size={18} color="inherit" /> : "Send Reset Code"}
+                  {loading ? <CircularProgress size={18} sx={{ color: "#000000" }} /> : "Send Reset Code"}
                 </button>
 
                 <div className="text-center pt-2">
                   <button
                     type="button"
                     onClick={() => setAuthMode("login")}
-                    className="text-xs text-sky-400 hover:text-sky-300"
+                    className="text-xs text-neutral-400 hover:text-white"
                   >
                     Back to Sign In
                   </button>
@@ -624,7 +614,7 @@ export default function AuthModal() {
             ) : (
               <form onSubmit={handleResetPassword} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">6-Digit Reset Code</label>
+                  <label className="block text-xs font-medium text-neutral-400 mb-1.5">6-Digit Reset Code</label>
                   <input
                     type="text"
                     required
@@ -632,35 +622,35 @@ export default function AuthModal() {
                     value={resetOtp}
                     onChange={(e) => setResetOtp(e.target.value)}
                     placeholder="Enter 6-digit code"
-                    className="w-full bg-[#0F172A] border border-[#334155] focus:border-sky-400 rounded-xl px-3 py-2.5 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none transition-colors text-center tracking-widest font-mono text-base"
+                    className="w-full bg-[#0e0e10] border border-[#262626] focus:border-white rounded-xl px-3 py-2.5 text-sm text-white placeholder-neutral-600 focus:outline-none transition-colors text-center tracking-widest font-mono text-base"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">New Password</label>
+                  <label className="block text-xs font-medium text-neutral-400 mb-1.5">New Password</label>
                   <input
                     type="password"
                     required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Minimum 6 characters"
-                    className="w-full bg-[#0F172A] border border-[#334155] focus:border-sky-400 rounded-xl px-3 py-2.5 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none transition-colors"
+                    className="w-full bg-[#0e0e10] border border-[#262626] focus:border-white rounded-xl px-3 py-2.5 text-sm text-white placeholder-neutral-600 focus:outline-none transition-colors"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 text-white font-semibold text-sm shadow-lg shadow-sky-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="w-full py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
-                  {loading ? <CircularProgress size={18} color="inherit" /> : "Update Password"}
+                  {loading ? <CircularProgress size={18} sx={{ color: "#000000" }} /> : "Update Password"}
                 </button>
 
                 <div className="text-center pt-2">
                   <button
                     type="button"
                     onClick={() => setForgotStep("email")}
-                    className="text-xs text-[#94A3B8] hover:text-white"
+                    className="text-xs text-neutral-400 hover:text-white"
                   >
                     Change Email
                   </button>

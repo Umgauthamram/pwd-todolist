@@ -5,11 +5,11 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Beginning — Google Keep Notes & Private Space",
     short_name: "Beginning",
     description:
-      "A modern Google Keep-inspired productivity suite with public workspace, dark slate aesthetics, and an isolated 4-digit PIN Private Space.",
+      "A modern Google Keep-inspired productivity suite with public workspace, monochrome black and white aesthetics, and an isolated 4-digit PIN Private Space.",
     start_url: "/",
     display: "standalone",
-    background_color: "#0F172A",
-    theme_color: "#0F172A",
+    background_color: "#000000",
+    theme_color: "#000000",
     orientation: "portrait",
     icons: [
       {

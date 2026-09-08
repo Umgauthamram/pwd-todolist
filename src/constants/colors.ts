@@ -6,13 +6,13 @@ export interface NoteColor {
 }
 
 export const NOTE_COLORS: NoteColor[] = [
-  { id: "default", name: "Default (Slate)", bg: "#1E293B", border: "#334155" },
-  { id: "red", name: "Coral Wine", bg: "#381E24", border: "#5C2B36" },
-  { id: "orange", name: "Amber Ochre", bg: "#3D2817", border: "#5E3E23" },
-  { id: "green", name: "Forest Olive", bg: "#1C3527", border: "#2E553F" },
-  { id: "teal", name: "Dark Emerald", bg: "#153638", border: "#225659" },
-  { id: "blue", name: "Deep Ocean", bg: "#162E46", border: "#244970" },
-  { id: "indigo", name: "Midnight Navy", bg: "#1D2447", border: "#2E3B70" },
-  { id: "purple", name: "Plum Dusk", bg: "#2B1D3D", border: "#4A3269" },
-  { id: "charcoal", name: "Obsidian", bg: "#18202F", border: "#2C394F" },
+  { id: "default", name: "Dark Neutral", bg: "#0e0e10", border: "#27272a" },
+  { id: "black", name: "True Black", bg: "#000000", border: "#27272a" },
+  { id: "charcoal", name: "Charcoal", bg: "#18181b", border: "#3f3f46" },
+  { id: "graphite", name: "Graphite", bg: "#1f1f23", border: "#3f3f46" },
+  { id: "deep-ash", name: "Deep Ash", bg: "#141416", border: "#2e2e34" },
+  { id: "steel", name: "Dark Steel", bg: "#222226", border: "#44444c" },
+  { id: "onyx", name: "Onyx", bg: "#121212", border: "#2a2a2a" },
+  { id: "stone", name: "Stone", bg: "#1c1917", border: "#3f3f46" },
+  { id: "night", name: "Night", bg: "#111113", border: "#2c2c34" },
 ];

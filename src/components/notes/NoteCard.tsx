@@ -59,11 +59,11 @@ export default function NoteCard({
   const [isHovered, setIsHovered] = useState(false);
 
   const activeColorObj = NOTE_COLORS.find(
-    (c) => c.bg.toLowerCase() === (note.color || "#1E293B").toLowerCase()
+    (c) => c.bg.toLowerCase() === (note.color || "#0e0e10").toLowerCase()
   );
   const borderColor = isHovered
-    ? "#64748B"
-    : activeColorObj?.border || "#334155";
+    ? "#737373"
+    : activeColorObj?.border || "#262626";
 
   return (
     <div
@@ -71,7 +71,7 @@ export default function NoteCard({
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => onEdit(note)}
       style={{
-        backgroundColor: note.color || "#1E293B",
+        backgroundColor: note.color || "#0e0e10",
         borderColor,
       }}
       className={`group relative rounded-2xl border transition-all duration-200 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-between p-4 ${
@@ -82,7 +82,7 @@ export default function NoteCard({
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-2">
           {note.title ? (
-            <h3 className="font-semibold text-sm sm:text-base text-[#F8FAFC] break-words line-clamp-2 leading-snug">
+            <h3 className="font-semibold text-sm sm:text-base text-white break-words line-clamp-2 leading-snug">
               {note.title}
             </h3>
           ) : (
@@ -100,7 +100,7 @@ export default function NoteCard({
                 <IconButton
                   size="small"
                   onClick={() => onTogglePin(note)}
-                  className={note.isPinned ? "text-sky-400" : "text-[#94A3B8] hover:text-white"}
+                  className={note.isPinned ? "text-white" : "text-neutral-400 hover:text-white"}
                 >
                   {note.isPinned ? (
                     <PushPinIcon fontSize="small" />
@@ -115,7 +115,7 @@ export default function NoteCard({
 
         {/* Content Preview */}
         {note.content && (
-          <p className="text-xs sm:text-sm text-[#94A3B8] whitespace-pre-wrap break-words line-clamp-6 leading-relaxed">
+          <p className="text-xs sm:text-sm text-neutral-300 whitespace-pre-wrap break-words line-clamp-6 leading-relaxed">
             {note.content}
           </p>
         )}
@@ -126,7 +126,7 @@ export default function NoteCard({
             {note.labels.map((lbl) => (
               <span
                 key={lbl}
-                className="text-[10px] px-2 py-0.5 rounded-full bg-[#0F172A]/70 text-sky-400 border border-slate-700/60 font-medium"
+                className="text-[10px] px-2 py-0.5 rounded-full bg-black/60 text-neutral-300 border border-[#262626] font-medium"
               >
                 #{lbl}
               </span>
@@ -138,7 +138,7 @@ export default function NoteCard({
       {/* Bottom Row: Actions Bar */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`mt-4 pt-2 border-t border-slate-700/40 flex items-center justify-between text-xs text-[#94A3B8] transition-opacity duration-150 ${
+        className={`mt-4 pt-2 border-t border-[#262626] flex items-center justify-between text-xs text-neutral-400 transition-opacity duration-150 ${
           isHovered ? "opacity-100" : "opacity-0 sm:opacity-0"
         }`}
       >
@@ -148,7 +148,7 @@ export default function NoteCard({
               <IconButton
                 size="small"
                 onClick={() => onRestoreFromTrash(note)}
-                className="text-[#94A3B8] hover:text-emerald-400 hover:bg-emerald-500/10"
+                className="text-neutral-400 hover:text-emerald-400 hover:bg-emerald-500/10"
               >
                 <RestoreFromTrashIcon fontSize="small" />
               </IconButton>
@@ -157,7 +157,7 @@ export default function NoteCard({
               <IconButton
                 size="small"
                 onClick={() => onDeletePermanently(note)}
-                className="text-[#94A3B8] hover:text-red-400 hover:bg-red-500/10"
+                className="text-neutral-400 hover:text-red-400 hover:bg-red-500/10"
               >
                 <DeleteForeverIcon fontSize="small" />
               </IconButton>
@@ -175,7 +175,7 @@ export default function NoteCard({
                 <IconButton
                   size="small"
                   onClick={() => onToggleArchive(note)}
-                  className="text-[#94A3B8] hover:text-white hover:bg-slate-700/40"
+                  className="text-neutral-400 hover:text-white hover:bg-neutral-800"
                 >
                   {note.isArchived ? (
                     <UnarchiveOutlinedIcon fontSize="small" />
@@ -189,7 +189,7 @@ export default function NoteCard({
                 <IconButton
                   size="small"
                   onClick={() => onMoveToTrash(note)}
-                  className="text-[#94A3B8] hover:text-red-400 hover:bg-red-500/10"
+                  className="text-neutral-400 hover:text-red-400 hover:bg-red-500/10"
                 >
                   <DeleteOutlinedIcon fontSize="small" />
                 </IconButton>
@@ -197,7 +197,7 @@ export default function NoteCard({
             </div>
 
             {note.updatedAt && (
-              <span className="text-[10px] text-[#64748B]">
+              <span className="text-[10px] text-neutral-500">
                 {new Date(note.updatedAt).toLocaleDateString(undefined, {
                   month: "short",
                   day: "numeric",

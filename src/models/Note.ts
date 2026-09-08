@@ -35,7 +35,7 @@ const NoteSchema = new Schema<INoteDocument>(
     },
     color: {
       type: String,
-      default: "#1E293B", // Slate 800 default card background
+      default: "#0e0e10", // Dark neutral card background
     },
     isPinned: {
       type: Boolean,

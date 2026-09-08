@@ -38,7 +38,7 @@ export default function ColorPicker({ currentColor, onChangeColor, size = "small
         <IconButton
           size={size}
           onClick={handleClick}
-          className="text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-slate-700/40"
+          className="text-neutral-400 hover:text-white hover:bg-neutral-800"
         >
           <PaletteOutlinedIcon fontSize="small" />
         </IconButton>
@@ -51,11 +51,11 @@ export default function ColorPicker({ currentColor, onChangeColor, size = "small
         slotProps={{
           paper: {
             sx: {
-              backgroundColor: "#0F172A",
-              border: "1px solid #334155",
+              backgroundColor: "#0e0e10",
+              border: "1px solid #262626",
               borderRadius: "14px",
               padding: "6px",
-              boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.5)",
+              boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.8)",
             },
           },
         }}
@@ -71,10 +71,10 @@ export default function ColorPicker({ currentColor, onChangeColor, size = "small
                 title={c.name}
                 style={{ backgroundColor: c.bg, borderColor: c.border }}
                 className={`w-7 h-7 rounded-full border transition-transform flex items-center justify-center cursor-pointer hover:scale-115 ${
-                  isSelected ? "ring-2 ring-sky-400 scale-105" : ""
+                  isSelected ? "ring-2 ring-white scale-105" : ""
                 }`}
               >
-                {isSelected && <CheckIcon sx={{ fontSize: 14, color: "#38BDF8" }} />}
+                {isSelected && <CheckIcon sx={{ fontSize: 14, color: "#ffffff" }} />}
               </button>
             );
           })}

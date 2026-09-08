@@ -6,32 +6,32 @@ export const darkTheme = createTheme({
   palette: {
     mode: "dark",
     background: {
-      default: "#0F172A",
-      paper: "#1E293B",
+      default: "#000000",
+      paper: "#0e0e10",
     },
-    divider: "#334155",
+    divider: "#262626",
     text: {
-      primary: "#F8FAFC",
-      secondary: "#94A3B8",
+      primary: "#ffffff",
+      secondary: "#a1a1aa",
     },
     primary: {
-      main: "#38BDF8", // Sky 400 accent for highlights
-      contrastText: "#0F172A",
+      main: "#ffffff",
+      contrastText: "#000000",
     },
     secondary: {
-      main: "#818CF8", // Indigo 400
+      main: "#d4d4d8",
     },
     error: {
-      main: "#F87171",
+      main: "#ef4444",
     },
     warning: {
-      main: "#FBBF24",
+      main: "#f59e0b",
     },
     info: {
-      main: "#38BDF8",
+      main: "#ffffff",
     },
     success: {
-      main: "#34D399",
+      main: "#22c55e",
     },
   },
   typography: {
@@ -49,8 +49,8 @@ export const darkTheme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: "none",
-          backgroundColor: "#1E293B",
-          borderColor: "#334155",
+          backgroundColor: "#0e0e10",
+          borderColor: "#262626",
         },
       },
     },
@@ -67,13 +67,13 @@ export const darkTheme = createTheme({
       styleOverrides: {
         root: {
           "& .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#334155",
+            borderColor: "#262626",
           },
           "&:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#64748B",
+            borderColor: "#52525b",
           },
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#38BDF8",
+            borderColor: "#ffffff",
           },
         },
       },

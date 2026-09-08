@@ -20,10 +20,10 @@ export default function LoginPage() {
   }, [user, loading, openAuthModal, router]);
 
   return (
-    <div className="min-h-screen bg-[#0F172A] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4">
       <div className="text-center space-y-4">
-        <CircularProgress size={36} sx={{ color: "#38BDF8" }} />
-        <p className="text-sm text-[#94A3B8]">Opening authentication...</p>
+        <CircularProgress size={36} sx={{ color: "#ffffff" }} />
+        <p className="text-sm text-neutral-400">Opening authentication...</p>
       </div>
     </div>
   );

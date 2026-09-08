@@ -270,24 +270,24 @@ export default function PinModal({
       slotProps={{
         paper: {
           sx: {
-            backgroundColor: "#1E293B",
-            color: "#F8FAFC",
+            backgroundColor: "#0e0e10",
+            color: "#ffffff",
             borderRadius: "24px",
-            border: "1px solid #334155",
+            border: "1px solid #262626",
             backgroundImage: "none",
             overflow: "hidden",
-            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.7)",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.9)",
           },
         },
       }}
     >
-      <div className="relative p-6 sm:p-8">
+      <div className="relative p-6 sm:p-8 selection:bg-white selection:text-black">
         {/* Close Button */}
         <div className="absolute top-4 right-4">
           <IconButton
             onClick={onClose}
             size="small"
-            className="text-[#94A3B8] hover:text-white hover:bg-[#334155]"
+            className="text-neutral-400 hover:text-white hover:bg-neutral-900"
           >
             <CloseIcon fontSize="small" />
           </IconButton>
@@ -295,15 +295,15 @@ export default function PinModal({
 
         {/* Security Shield Header */}
         <div className="text-center mb-6">
-          <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/20">
-            <LockOutlinedIcon className="text-slate-900" sx={{ fontSize: 30 }} />
+          <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-white text-black flex items-center justify-center shadow-lg shadow-white/10">
+            <LockOutlinedIcon sx={{ fontSize: 30 }} />
           </div>
-          <h2 className="text-lg font-bold tracking-tight text-[#F8FAFC]">
+          <h2 className="text-lg font-bold tracking-tight text-white">
             {currentMode === "enter" && "Unlock Private Space"}
             {currentMode === "setup" && (setupStep === "enter" ? "Set 4-Digit PIN" : "Confirm 4-Digit PIN")}
             {currentMode === "reset" && "Reset 4-Digit PIN"}
           </h2>
-          <p className="text-xs text-[#94A3B8] mt-1">
+          <p className="text-xs text-neutral-400 mt-1">
             {currentMode === "enter" && "Enter your 4-digit security PIN to access isolated private notes."}
             {currentMode === "setup" && (setupStep === "enter" ? "Create a 4-digit numeric code to protect your private notes." : "Re-enter the 4-digit PIN to confirm.")}
             {currentMode === "reset" && "Enter the reset token sent to your email and your new 4-digit PIN."}
@@ -327,14 +327,14 @@ export default function PinModal({
         {/* Token Input for Reset Mode */}
         {currentMode === "reset" && (
           <div className="mb-5">
-            <label className="block text-xs font-medium text-[#94A3B8] mb-1.5">Reset Token from Email</label>
+            <label className="block text-xs font-medium text-neutral-400 mb-1.5">Reset Token from Email</label>
             <input
               type="text"
               required
               value={resetToken}
               onChange={(e) => setResetToken(e.target.value)}
               placeholder="Paste token or link code here"
-              className="w-full bg-[#0F172A] border border-[#334155] focus:border-amber-400 rounded-xl px-3 py-2 text-xs font-mono text-amber-400 focus:outline-none"
+              className="w-full bg-black border border-[#262626] focus:border-white rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none transition-colors"
             />
           </div>
         )}
@@ -355,10 +355,10 @@ export default function PinModal({
                   value={activeDigits[idx]}
                   onChange={(e) => handleDigitChange(idx, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(idx, e)}
-                  className={`w-13 h-14 text-center text-2xl font-bold rounded-2xl bg-[#0F172A] border transition-all focus:outline-none ${
+                  className={`w-13 h-14 text-center text-2xl font-bold rounded-2xl bg-black border transition-all focus:outline-none ${
                     hasDigit
-                      ? "border-amber-400 text-amber-400 ring-2 ring-amber-500/20 scale-105"
-                      : "border-[#334155] text-white focus:border-amber-400"
+                      ? "border-white text-white ring-2 ring-white/30 scale-105"
+                      : "border-[#262626] text-white focus:border-white"
                   }`}
                 />
               </div>
@@ -374,7 +374,7 @@ export default function PinModal({
               type="button"
               disabled={loading}
               onClick={() => handleKeypadPress(num)}
-              className="h-12 rounded-xl bg-[#0F172A] hover:bg-slate-700/60 border border-[#334155] text-base font-semibold text-[#F8FAFC] transition-transform active:scale-95 flex items-center justify-center cursor-pointer"
+              className="h-12 rounded-xl bg-[#171717] hover:bg-neutral-800 border border-[#262626] text-base font-semibold text-white transition-transform active:scale-95 flex items-center justify-center cursor-pointer"
             >
               {num}
             </button>
@@ -383,7 +383,7 @@ export default function PinModal({
             type="button"
             disabled={loading}
             onClick={() => setActiveDigits(["", "", "", ""])}
-            className="h-12 rounded-xl bg-[#0F172A] hover:bg-slate-700/60 border border-[#334155] text-xs font-medium text-[#94A3B8] transition-transform active:scale-95 flex items-center justify-center cursor-pointer"
+            className="h-12 rounded-xl bg-[#171717] hover:bg-neutral-800 border border-[#262626] text-xs font-medium text-neutral-400 hover:text-white transition-transform active:scale-95 flex items-center justify-center cursor-pointer"
           >
             Clear
           </button>
@@ -391,7 +391,7 @@ export default function PinModal({
             type="button"
             disabled={loading}
             onClick={() => handleKeypadPress("0")}
-            className="h-12 rounded-xl bg-[#0F172A] hover:bg-slate-700/60 border border-[#334155] text-base font-semibold text-[#F8FAFC] transition-transform active:scale-95 flex items-center justify-center cursor-pointer"
+            className="h-12 rounded-xl bg-[#171717] hover:bg-neutral-800 border border-[#262626] text-base font-semibold text-white transition-transform active:scale-95 flex items-center justify-center cursor-pointer"
           >
             0
           </button>
@@ -399,7 +399,7 @@ export default function PinModal({
             type="button"
             disabled={loading}
             onClick={handleKeypadBackspace}
-            className="h-12 rounded-xl bg-[#0F172A] hover:bg-slate-700/60 border border-[#334155] text-base font-medium text-[#94A3B8] hover:text-white transition-transform active:scale-95 flex items-center justify-center cursor-pointer"
+            className="h-12 rounded-xl bg-[#171717] hover:bg-neutral-800 border border-[#262626] text-base font-medium text-neutral-400 hover:text-white transition-transform active:scale-95 flex items-center justify-center cursor-pointer"
           >
             <BackspaceOutlinedIcon fontSize="small" />
           </button>
@@ -408,18 +408,18 @@ export default function PinModal({
         {/* Loading Spinner */}
         {loading && (
           <div className="flex justify-center my-2">
-            <CircularProgress size={22} sx={{ color: "#F59E0B" }} />
+            <CircularProgress size={22} sx={{ color: "#ffffff" }} />
           </div>
         )}
 
         {/* Footer Actions / Links */}
-        <div className="pt-2 text-center space-y-2 border-t border-slate-700/40 text-xs">
+        <div className="pt-2 text-center space-y-2 border-t border-[#262626] text-xs">
           {currentMode === "enter" && (
             <button
               type="button"
               disabled={loading}
               onClick={handleRequestPinReset}
-              className="text-amber-400 hover:text-amber-300 font-medium transition-colors"
+              className="text-neutral-300 hover:text-white underline font-medium transition-colors"
             >
               Forgot 4-digit PIN? Request Email Reset
             </button>
@@ -432,7 +432,7 @@ export default function PinModal({
                 setSetupStep("enter");
                 setConfirmDigits(["", "", "", ""]);
               }}
-              className="text-[#94A3B8] hover:text-white flex items-center gap-1 mx-auto"
+              className="text-neutral-400 hover:text-white flex items-center gap-1 mx-auto"
             >
               <ArrowBackIcon fontSize="inherit" /> Change chosen PIN
             </button>
@@ -442,7 +442,7 @@ export default function PinModal({
             <button
               type="button"
               onClick={() => setCurrentMode("enter")}
-              className="text-[#94A3B8] hover:text-white"
+              className="text-neutral-400 hover:text-white"
             >
               Back to PIN entry
             </button>

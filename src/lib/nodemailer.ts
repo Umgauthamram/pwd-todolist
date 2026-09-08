@@ -42,43 +42,45 @@ function renderDarkEmailLayout(title: string, contentHtml: string): string {
       body {
         margin: 0;
         padding: 0;
-        background-color: #0F172A;
+        background-color: #000000;
         font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        color: #F8FAFC;
+        color: #ffffff;
         -webkit-font-smoothing: antialiased;
       }
       .container {
         max-width: 540px;
         margin: 40px auto;
-        background-color: #1E293B;
-        border: 1px solid #334155;
+        background-color: #0e0e10;
+        border: 1px solid #262626;
         border-radius: 16px;
         overflow: hidden;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.8);
       }
       .header {
         padding: 32px 32px 24px;
         text-align: center;
-        border-bottom: 1px solid #334155;
-        background: linear-gradient(180deg, #1E293B 0%, #0F172A 100%);
+        border-bottom: 1px solid #262626;
+        background-color: #0e0e10;
       }
       .logo-title {
-        font-size: 22px;
+        font-size: 24px;
         font-weight: 700;
         letter-spacing: -0.5px;
-        color: #F8FAFC;
+        color: #ffffff;
         margin: 0;
       }
       .logo-tag {
         font-size: 11px;
-        color: #38BDF8;
-        background-color: rgba(56, 189, 248, 0.1);
-        border: 1px solid rgba(56, 189, 248, 0.2);
-        padding: 2px 8px;
+        color: #a1a1aa;
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid #262626;
+        padding: 3px 10px;
         border-radius: 9999px;
         display: inline-block;
-        margin-top: 6px;
+        margin-top: 8px;
         font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
       .body-content {
         padding: 32px;
@@ -86,8 +88,8 @@ function renderDarkEmailLayout(title: string, contentHtml: string): string {
       .otp-box {
         margin: 28px 0;
         text-align: center;
-        background-color: #0F172A;
-        border: 1px dashed #38BDF8;
+        background-color: #000000;
+        border: 1px dashed #525252;
         border-radius: 12px;
         padding: 20px;
       }
@@ -95,13 +97,13 @@ function renderDarkEmailLayout(title: string, contentHtml: string): string {
         font-size: 34px;
         font-weight: 700;
         letter-spacing: 8px;
-        color: #38BDF8;
+        color: #ffffff;
         margin: 0;
       }
       .btn {
         display: inline-block;
-        background-color: #38BDF8;
-        color: #0F172A !important;
+        background-color: #ffffff;
+        color: #000000 !important;
         font-size: 14px;
         font-weight: 600;
         text-decoration: none;
@@ -112,20 +114,20 @@ function renderDarkEmailLayout(title: string, contentHtml: string): string {
       }
       .footer {
         padding: 20px 32px;
-        background-color: #0F172A;
-        border-top: 1px solid #334155;
+        background-color: #000000;
+        border-top: 1px solid #262626;
         text-align: center;
         font-size: 12px;
-        color: #94A3B8;
+        color: #737373;
       }
       p {
         font-size: 14px;
         line-height: 1.6;
-        color: #94A3B8;
+        color: #a1a1aa;
         margin: 0 0 16px;
       }
       strong {
-        color: #F8FAFC;
+        color: #ffffff;
       }
     </style>
   </head>
@@ -154,12 +156,12 @@ function renderDarkEmailLayout(title: string, contentHtml: string): string {
 export async function sendOtpEmail(to: string, otp: string): Promise<boolean> {
   const subject = `Your Verification Code: ${otp} — Beginning`;
   const content = `
-    <h2 style="font-size: 18px; font-weight: 600; color: #F8FAFC; margin-top: 0;">Verify Your Email Address</h2>
+    <h2 style="font-size: 18px; font-weight: 600; color: #ffffff; margin-top: 0;">Verify Your Email Address</h2>
     <p>Thank you for signing up for <strong>Beginning</strong>. Please use the following 6-digit One-Time Password (OTP) to complete your verification.</p>
     
     <div class="otp-box">
       <div class="otp-code">${otp}</div>
-      <div style="font-size: 11px; color: #94A3B8; margin-top: 8px;">Valid for 10 minutes</div>
+      <div style="font-size: 11px; color: #a1a1aa; margin-top: 8px;">Valid for 10 minutes</div>
     </div>
 
     <p style="font-size: 13px;">Never share this verification code with anyone. Our team will never ask for your OTP.</p>
@@ -197,13 +199,13 @@ export async function sendOtpEmail(to: string, otp: string): Promise<boolean> {
 export async function sendPasswordResetEmail(to: string, otp: string): Promise<boolean> {
   const subject = `Reset Your Password: ${otp} — Beginning`;
   const content = `
-    <h2 style="font-size: 18px; font-weight: 600; color: #F8FAFC; margin-top: 0;">Password Reset Request</h2>
+    <h2 style="font-size: 18px; font-weight: 600; color: #ffffff; margin-top: 0;">Password Reset Request</h2>
     <p>We received a request to reset the password for your account (<strong>${to}</strong>).</p>
     <p>Use the following 6-digit verification code to choose a new password:</p>
     
     <div class="otp-box">
       <div class="otp-code">${otp}</div>
-      <div style="font-size: 11px; color: #94A3B8; margin-top: 8px;">Code expires in 15 minutes</div>
+      <div style="font-size: 11px; color: #a1a1aa; margin-top: 8px;">Code expires in 15 minutes</div>
     </div>
 
     <p style="font-size: 13px;">If you did not request a password reset, please secure your account immediately.</p>
@@ -241,7 +243,7 @@ export async function sendPasswordResetEmail(to: string, otp: string): Promise<b
 export async function sendPinResetEmail(to: string, resetUrl: string, token: string): Promise<boolean> {
   const subject = `Private Space PIN Reset — Beginning`;
   const content = `
-    <h2 style="font-size: 18px; font-weight: 600; color: #F8FAFC; margin-top: 0;">Private Space PIN Reset</h2>
+    <h2 style="font-size: 18px; font-weight: 600; color: #ffffff; margin-top: 0;">Private Space PIN Reset</h2>
     <p>You requested to reset the 4-digit security PIN for your <strong>Private Space</strong>.</p>
     <p>Click the secure link below to establish a new 4-digit PIN for your isolated notes:</p>
     
@@ -250,8 +252,8 @@ export async function sendPinResetEmail(to: string, resetUrl: string, token: str
     </div>
 
     <div class="otp-box" style="margin-top: 20px; padding: 12px;">
-      <p style="margin: 0; font-size: 11px; color: #94A3B8;">Or paste this token directly into the PIN reset dialog:</p>
-      <code style="font-size: 13px; color: #38BDF8; word-break: break-all;">${token}</code>
+      <p style="margin: 0; font-size: 11px; color: #a1a1aa;">Or paste this token directly into the PIN reset dialog:</p>
+      <code style="font-size: 13px; color: #ffffff; font-weight: 700; word-break: break-all;">${token}</code>
     </div>
 
     <p style="font-size: 12px; margin-top: 16px;">This single-use reset token expires in 15 minutes.</p>

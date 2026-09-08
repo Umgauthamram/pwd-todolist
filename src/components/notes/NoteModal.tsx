@@ -37,7 +37,7 @@ export default function NoteModal({
 }: NoteModalProps) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [color, setColor] = useState("#1E293B");
+  const [color, setColor] = useState("#0e0e10");
   const [isPinned, setIsPinned] = useState(false);
   const [isArchived, setIsArchived] = useState(false);
   const [labels, setLabels] = useState<string[]>([]);
@@ -50,7 +50,7 @@ export default function NoteModal({
     if (note) {
       setTitle(note.title || "");
       setContent(note.content || "");
-      setColor(note.color || "#1E293B");
+      setColor(note.color || "#0e0e10");
       setIsPinned(Boolean(note.isPinned));
       setIsArchived(Boolean(note.isArchived));
       setLabels(note.labels || []);
@@ -110,7 +110,7 @@ export default function NoteModal({
   const activeColorObj = NOTE_COLORS.find(
     (c) => c.bg.toLowerCase() === color.toLowerCase()
   );
-  const activeBorder = activeColorObj?.border || "#334155";
+  const activeBorder = activeColorObj?.border || "#262626";
 
   return (
     <Dialog
@@ -123,7 +123,7 @@ export default function NoteModal({
           sx: {
             backgroundColor: color,
             borderColor: activeBorder,
-            color: "#F8FAFC",
+            color: "#ffffff",
             borderRadius: "20px",
             border: `1px solid ${activeBorder}`,
             backgroundImage: "none",
@@ -142,13 +142,13 @@ export default function NoteModal({
             placeholder="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-transparent text-[#F8FAFC] placeholder-[#94A3B8] text-lg font-semibold focus:outline-none"
+            className="w-full bg-transparent text-white placeholder-neutral-500 text-lg font-semibold focus:outline-none"
           />
           <Tooltip title={isPinned ? "Unpin note" : "Pin note"}>
             <IconButton
               size="small"
               onClick={() => setIsPinned(!isPinned)}
-              className={isPinned ? "text-sky-400" : "text-[#94A3B8] hover:text-white"}
+              className={isPinned ? "text-white" : "text-neutral-400 hover:text-white"}
             >
               {isPinned ? <PushPinIcon fontSize="small" /> : <PushPinOutlinedIcon fontSize="small" />}
             </IconButton>
@@ -163,7 +163,7 @@ export default function NoteModal({
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={4}
-            className="w-full bg-transparent text-[#F8FAFC] placeholder-[#94A3B8] text-sm focus:outline-none resize-none leading-relaxed min-h-[120px]"
+            className="w-full bg-transparent text-white placeholder-neutral-500 text-sm focus:outline-none resize-none leading-relaxed min-h-[120px]"
           />
         </div>
 
@@ -177,9 +177,9 @@ export default function NoteModal({
                 size="small"
                 onDelete={() => removeLabel(lbl)}
                 sx={{
-                  backgroundColor: "rgba(15, 23, 42, 0.6)",
-                  color: "#38BDF8",
-                  borderColor: "rgba(56, 189, 248, 0.2)",
+                  backgroundColor: "#1c1c1e",
+                  color: "#ffffff",
+                  borderColor: "#2e2e32",
                   fontSize: "11px",
                   height: "22px",
                 }}
@@ -194,14 +194,14 @@ export default function NoteModal({
                 value={newLabelInput}
                 onChange={(e) => setNewLabelInput(e.target.value)}
                 onKeyDown={handleAddLabel}
-                className="bg-[#0F172A] border border-[#334155] rounded-full px-2.5 py-0.5 text-xs text-sky-400 focus:outline-none placeholder-[#64748B]"
+                className="bg-black border border-[#262626] rounded-full px-2.5 py-0.5 text-xs text-white focus:outline-none placeholder-neutral-500 focus:border-white transition-colors"
               />
             )}
           </div>
         )}
 
         {/* Bottom Modal Actions */}
-        <div className="flex items-center justify-between pt-3 border-t border-slate-700/40">
+        <div className="flex items-center justify-between pt-3 border-t border-[#262626]">
           <div className="flex items-center gap-1">
             <ColorPicker currentColor={color} onChangeColor={setColor} />
 
@@ -209,7 +209,7 @@ export default function NoteModal({
               <IconButton
                 size="small"
                 onClick={() => setShowLabelInput(!showLabelInput)}
-                className="text-[#94A3B8] hover:text-white hover:bg-slate-700/40"
+                className="text-neutral-400 hover:text-white hover:bg-neutral-800"
               >
                 <LabelOutlinedIcon fontSize="small" />
               </IconButton>
@@ -219,7 +219,7 @@ export default function NoteModal({
               <IconButton
                 size="small"
                 onClick={() => setIsArchived(!isArchived)}
-                className={isArchived ? "text-sky-400" : "text-[#94A3B8] hover:text-white hover:bg-slate-700/40"}
+                className={isArchived ? "text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800"}
               >
                 {isArchived ? (
                   <UnarchiveOutlinedIcon fontSize="small" />
@@ -236,7 +236,7 @@ export default function NoteModal({
                   onMoveToTrash(note);
                   onClose();
                 }}
-                className="text-[#94A3B8] hover:text-red-400 hover:bg-red-500/10"
+                className="text-neutral-400 hover:text-red-400 hover:bg-red-500/10"
               >
                 <DeleteOutlinedIcon fontSize="small" />
               </IconButton>
@@ -246,7 +246,7 @@ export default function NoteModal({
           <Button
             onClick={handleSaveAndClose}
             sx={{
-              color: "#F8FAFC",
+              color: "#ffffff",
               textTransform: "none",
               fontWeight: 600,
               fontSize: "13px",

@@ -35,7 +35,7 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [color, setColor] = useState("#1E293B");
+  const [color, setColor] = useState("#0e0e10");
   const [isPinned, setIsPinned] = useState(false);
   const [isArchived, setIsArchived] = useState(false);
   const [labels, setLabels] = useState<string[]>([]);
@@ -86,7 +86,7 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
   const resetForm = () => {
     setTitle("");
     setContent("");
-    setColor("#1E293B");
+    setColor("#0e0e10");
     setIsPinned(false);
     setIsArchived(false);
     setLabels([]);
@@ -113,7 +113,7 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
 
   // Find border color matching selected card background
   const activeColorObj = NOTE_COLORS.find((c) => c.bg.toLowerCase() === color.toLowerCase());
-  const activeBorder = activeColorObj?.border || "#334155";
+  const activeBorder = activeColorObj?.border || "#262626";
 
   if (!isExpanded) {
     return (
@@ -123,24 +123,24 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
             setIsExpanded(true);
             setTimeout(() => contentInputRef.current?.focus(), 50);
           }}
-          className="bg-[#1E293B] border border-[#334155] hover:border-slate-500 rounded-2xl p-3.5 shadow-xl transition-all flex items-center justify-between cursor-text"
+          className="bg-[#0e0e10] border border-[#262626] hover:border-neutral-500 rounded-2xl p-3.5 shadow-xl transition-all flex items-center justify-between cursor-text"
         >
-          <span className="text-[#94A3B8] text-sm font-medium select-none px-1">
+          <span className="text-neutral-400 text-sm font-medium select-none px-1">
             Take a note...
           </span>
-          <div className="flex items-center gap-1 text-[#94A3B8]">
+          <div className="flex items-center gap-1 text-neutral-400">
             <Tooltip title="New list">
-              <IconButton size="small" className="text-[#94A3B8] hover:text-white">
+              <IconButton size="small" className="text-neutral-400 hover:text-white">
                 <CheckBoxOutlinedIcon fontSize="small" />
               </IconButton>
             </Tooltip>
             <Tooltip title="New note with drawing">
-              <IconButton size="small" className="text-[#94A3B8] hover:text-white">
+              <IconButton size="small" className="text-neutral-400 hover:text-white">
                 <BrushOutlinedIcon fontSize="small" />
               </IconButton>
             </Tooltip>
             <Tooltip title="New note with image">
-              <IconButton size="small" className="text-[#94A3B8] hover:text-white">
+              <IconButton size="small" className="text-neutral-400 hover:text-white">
                 <ImageOutlinedIcon fontSize="small" />
               </IconButton>
             </Tooltip>
@@ -164,13 +164,13 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
             placeholder="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-transparent text-[#F8FAFC] placeholder-[#94A3B8] text-base font-semibold focus:outline-none"
+            className="w-full bg-transparent text-white placeholder-neutral-500 text-base font-semibold focus:outline-none"
           />
           <Tooltip title={isPinned ? "Unpin note" : "Pin note"}>
             <IconButton
               size="small"
               onClick={() => setIsPinned(!isPinned)}
-              className={isPinned ? "text-sky-400" : "text-[#94A3B8] hover:text-white"}
+              className={isPinned ? "text-white" : "text-neutral-400 hover:text-white"}
             >
               {isPinned ? <PushPinIcon fontSize="small" /> : <PushPinOutlinedIcon fontSize="small" />}
             </IconButton>
@@ -185,7 +185,7 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={3}
-            className="w-full bg-transparent text-[#F8FAFC] placeholder-[#94A3B8] text-sm focus:outline-none resize-none leading-relaxed"
+            className="w-full bg-transparent text-white placeholder-neutral-500 text-sm focus:outline-none resize-none leading-relaxed"
           />
         </div>
 
@@ -199,9 +199,9 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
                 size="small"
                 onDelete={() => removeLabel(lbl)}
                 sx={{
-                  backgroundColor: "rgba(15, 23, 42, 0.6)",
-                  color: "#38BDF8",
-                  borderColor: "rgba(56, 189, 248, 0.2)",
+                  backgroundColor: "#1c1c1e",
+                  color: "#ffffff",
+                  borderColor: "#2e2e32",
                   fontSize: "11px",
                   height: "22px",
                 }}
@@ -216,14 +216,14 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
                 value={newLabelInput}
                 onChange={(e) => setNewLabelInput(e.target.value)}
                 onKeyDown={handleAddLabel}
-                className="bg-[#0F172A] border border-[#334155] rounded-full px-2.5 py-0.5 text-xs text-sky-400 focus:outline-none placeholder-[#64748B]"
+                className="bg-black border border-[#262626] rounded-full px-2.5 py-0.5 text-xs text-white focus:outline-none placeholder-neutral-500 focus:border-white transition-colors"
               />
             )}
           </div>
         )}
 
         {/* Bottom Actions Bar */}
-        <div className="flex items-center justify-between pt-2 border-t border-slate-700/40">
+        <div className="flex items-center justify-between pt-2 border-t border-[#262626]">
           <div className="flex items-center gap-1">
             <ColorPicker currentColor={color} onChangeColor={setColor} />
 
@@ -231,7 +231,7 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
               <IconButton
                 size="small"
                 onClick={() => setShowLabelInput(!showLabelInput)}
-                className="text-[#94A3B8] hover:text-white hover:bg-slate-700/40"
+                className="text-neutral-400 hover:text-white hover:bg-neutral-800"
               >
                 <LabelOutlinedIcon fontSize="small" />
               </IconButton>
@@ -241,7 +241,7 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
               <IconButton
                 size="small"
                 onClick={() => setIsArchived(!isArchived)}
-                className={isArchived ? "text-sky-400" : "text-[#94A3B8] hover:text-white hover:bg-slate-700/40"}
+                className={isArchived ? "text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800"}
               >
                 <ArchiveOutlinedIcon fontSize="small" />
               </IconButton>
@@ -254,7 +254,7 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
               disabled={saving}
               size="small"
               sx={{
-                color: "#F8FAFC",
+                color: "#ffffff",
                 textTransform: "none",
                 fontWeight: 600,
                 fontSize: "13px",
