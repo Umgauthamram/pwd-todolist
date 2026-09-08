@@ -27,15 +27,27 @@ import {
   Storage as StorageIcon,
   EmailOutlined as EmailOutlinedIcon,
   SecurityOutlined as SecurityOutlinedIcon,
+  Logout as LogoutIcon,
+  Person as PersonIcon,
 } from "@mui/icons-material";
+import { useAuth } from "@/context/AuthContext";
 
 type NavItem = "notes" | "private" | "archive" | "trash" | "settings";
 
 export default function HomePage() {
+  const { user, loading, openAuthModal, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<NavItem>("notes");
   const [isGridView, setIsGridView] = useState<boolean>(true);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const handleNavClick = (id: NavItem) => {
+    if (id === "private" && !user) {
+      openAuthModal("login");
+      return;
+    }
+    setActiveTab(id);
+  };
 
   const navItems = [
     { id: "notes" as NavItem, label: "Notes", icon: <LightbulbOutlinedIcon fontSize="small" /> },
@@ -43,7 +55,7 @@ export default function HomePage() {
       id: "private" as NavItem,
       label: "Private Space",
       icon: <LockOutlinedIcon fontSize="small" />,
-      badge: "PIN Protected",
+      badge: user?.hasPin ? "PIN Active" : "PIN Required",
     },
     { id: "archive" as NavItem, label: "Archive", icon: <ArchiveOutlinedIcon fontSize="small" /> },
     { id: "trash" as NavItem, label: "Trash", icon: <DeleteOutlinedIcon fontSize="small" /> },
@@ -93,10 +105,14 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-1 sm:gap-2">
+        {/* Action Controls & Authentication Profile */}
+        <div className="flex items-center gap-1 sm:gap-3">
           <Tooltip title="Refresh">
-            <IconButton className="text-[#94A3B8] hover:text-white hover:bg-[#1E293B]" size="small">
+            <IconButton
+              onClick={() => window.location.reload()}
+              className="text-[#94A3B8] hover:text-white hover:bg-[#1E293B]"
+              size="small"
+            >
               <RefreshIcon fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -121,9 +137,65 @@ export default function HomePage() {
             </IconButton>
           </Tooltip>
 
-          <div className="w-8 h-8 ml-2 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 border border-[#334155] flex items-center justify-center font-bold text-xs text-white shadow-md cursor-pointer hover:ring-2 hover:ring-sky-400 transition-all">
-            B
-          </div>
+          {/* User Authentication Trigger */}
+          {loading ? (
+            <div className="w-8 h-8 rounded-full bg-[#1E293B] animate-pulse" />
+          ) : user ? (
+            <div className="flex items-center gap-2 pl-2 border-l border-[#334155]">
+              <Tooltip title={`Signed in as ${user.email}`}>
+                <div className="flex items-center gap-2 cursor-pointer bg-[#1E293B] hover:bg-[#334155] border border-[#334155] px-2.5 py-1 rounded-full transition-all">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-500 text-white font-bold text-xs flex items-center justify-center">
+                    {user.email.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-xs font-medium text-[#F8FAFC] hidden sm:inline max-w-[120px] truncate">
+                    {user.email.split("@")[0]}
+                  </span>
+                </div>
+              </Tooltip>
+
+              <Tooltip title="Sign Out">
+                <IconButton
+                  onClick={logout}
+                  size="small"
+                  className="text-[#94A3B8] hover:text-red-400 hover:bg-red-500/10"
+                >
+                  <LogoutIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 pl-2">
+              <Button
+                onClick={() => openAuthModal("login")}
+                size="small"
+                variant="outlined"
+                sx={{
+                  borderColor: "#334155",
+                  color: "#F8FAFC",
+                  "&:hover": { borderColor: "#64748B", backgroundColor: "#1E293B" },
+                  fontSize: "12px",
+                  padding: "4px 12px",
+                }}
+              >
+                Sign In
+              </Button>
+              <Button
+                onClick={() => openAuthModal("register")}
+                size="small"
+                variant="contained"
+                sx={{
+                  backgroundColor: "#38BDF8",
+                  color: "#0F172A",
+                  fontWeight: 600,
+                  "&:hover": { backgroundColor: "#0284C7" },
+                  fontSize: "12px",
+                  padding: "4px 12px",
+                }}
+              >
+                Sign Up
+              </Button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -141,7 +213,7 @@ export default function HomePage() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id)}
+                  onClick={() => handleNavClick(item.id)}
                   className={`w-full flex items-center gap-4 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                     isActive
                       ? "bg-[#1E293B] text-sky-400 border border-[#334155] shadow-sm"
@@ -170,10 +242,14 @@ export default function HomePage() {
             <div className="p-3 rounded-xl bg-[#1E293B]/50 border border-[#334155] text-xs text-[#94A3B8] space-y-1">
               <div className="flex items-center gap-1.5 text-[#F8FAFC] font-medium">
                 <SecurityOutlinedIcon fontSize="inherit" className="text-sky-400" />
-                <span>Beginning Core</span>
+                <span>Beginning Security</span>
               </div>
               <p className="text-[11px] text-[#94A3B8]">
-                Phase 1 Active: Next.js + MUI + Tailwind + MongoDB Mongoose utility.
+                {user ? (
+                  <>Authenticated as <span className="text-sky-400 font-mono">{user.email}</span></>
+                ) : (
+                  <>Guest session. Sign in to enable Private Space isolation.</>
+                )}
               </p>
             </div>
           )}
@@ -210,133 +286,202 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Phase 1 Setup & UI Shell Showcase */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Typography variant="subtitle1" className="font-semibold text-[#F8FAFC] flex items-center gap-2">
-                  <CheckCircleIcon className="text-emerald-400" fontSize="small" />
-                  Phase 1: Project Setup & UI Foundation Verified
-                </Typography>
-                <Chip
-                  label="Phase 1 Ready"
-                  size="small"
-                  className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-medium"
-                />
-              </div>
-
-              {/* Status Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 rounded-xl bg-[#1E293B] border border-[#334155] space-y-2">
-                  <div className="flex items-center gap-2 text-sky-400">
-                    <StorageIcon fontSize="small" />
-                    <span className="font-semibold text-sm text-[#F8FAFC]">Mongoose & Database</span>
+            {/* PHASE 2: Live Authentication & Nodemailer Showcase Card */}
+            <div className="p-5 rounded-2xl bg-[#1E293B] border border-[#334155] shadow-lg space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#334155] pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
+                    <EmailOutlinedIcon fontSize="small" />
                   </div>
-                  <p className="text-xs text-[#94A3B8]">
-                    MongoDB connection pooling utility with hot-reload caching configured at <code className="text-sky-300">src/lib/mongoose.ts</code>.
-                  </p>
-                  <div className="text-[11px] text-emerald-400 flex items-center gap-1">
-                    <CheckCircleIcon fontSize="inherit" /> Ready for User/Note schemas
+                  <div>
+                    <Typography variant="subtitle1" className="font-semibold text-white">
+                      Phase 2: Authentication &amp; Nodemailer Pipeline
+                    </Typography>
+                    <Typography variant="body2" className="text-xs text-[#94A3B8]">
+                      Mongoose User Model • 6-Digit OTP Emailing • Bcrypt Hash • JWT HttpOnly Cookies
+                    </Typography>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-[#1E293B] border border-[#334155] space-y-2">
-                  <div className="flex items-center gap-2 text-indigo-400">
-                    <LightbulbOutlinedIcon fontSize="small" />
-                    <span className="font-semibold text-sm text-[#F8FAFC]">Design & Typography</span>
-                  </div>
-                  <p className="text-xs text-[#94A3B8]">
-                    Google Font <code className="text-indigo-300">Poppins</code> configured globally in layout.tsx. Dark Slate palette with Material UI theme integration.
-                  </p>
-                  <div className="text-[11px] text-emerald-400 flex items-center gap-1">
-                    <CheckCircleIcon fontSize="inherit" /> #0F172A / #1E293B / #334155
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-xl bg-[#1E293B] border border-[#334155] space-y-2">
-                  <div className="flex items-center gap-2 text-amber-400">
-                    <SecurityOutlinedIcon fontSize="small" />
-                    <span className="font-semibold text-sm text-[#F8FAFC]">Private Space Engine</span>
-                  </div>
-                  <p className="text-xs text-[#94A3B8]">
-                    Dependencies installed: bcryptjs, jsonwebtoken, nodemailer, dexie, dexie-react-hooks, lucide-react, MUI.
-                  </p>
-                  <div className="text-[11px] text-emerald-400 flex items-center gap-1">
-                    <CheckCircleIcon fontSize="inherit" /> Ready for Phase 2 Auth & OTP
-                  </div>
+                <div className="flex items-center gap-2">
+                  <Chip
+                    label={user ? "Session Active" : "Unauthenticated"}
+                    size="small"
+                    className={
+                      user
+                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
+                        : "bg-slate-700/50 text-[#94A3B8] border border-[#334155]"
+                    }
+                  />
+                  <Chip
+                    label="Phase 2 Ready"
+                    size="small"
+                    className="bg-sky-500/10 text-sky-400 border border-sky-500/30"
+                  />
                 </div>
               </div>
 
-              {/* Sample Google Keep Cards (Showcasing Pinned & Grid Aesthetic) */}
-              <div className="pt-4 space-y-3">
-                <Typography variant="body2" className="font-medium text-[#94A3B8] uppercase tracking-wider text-xs">
-                  Pinned Notes Preview
-                </Typography>
+              {/* Live Session Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                <div className="p-3 rounded-xl bg-[#0F172A] border border-[#334155] space-y-1">
+                  <span className="text-[#94A3B8]">Current User:</span>
+                  <p className="text-[#F8FAFC] font-mono font-medium truncate">
+                    {user ? user.email : "Not logged in"}
+                  </p>
+                </div>
+                <div className="p-3 rounded-xl bg-[#0F172A] border border-[#334155] space-y-1">
+                  <span className="text-[#94A3B8]">Verification Status:</span>
+                  <p className="text-emerald-400 font-medium flex items-center gap-1">
+                    {user ? (
+                      <>
+                        <CheckCircleIcon fontSize="inherit" /> Verified User
+                      </>
+                    ) : (
+                      <span className="text-[#94A3B8]">Awaiting Auth</span>
+                    )}
+                  </p>
+                </div>
+                <div className="p-3 rounded-xl bg-[#0F172A] border border-[#334155] space-y-1">
+                  <span className="text-[#94A3B8]">Private Space PIN:</span>
+                  <p className="text-amber-400 font-medium">
+                    {user?.hasPin ? "Configured" : "Not Set (Phase 4)"}
+                  </p>
+                </div>
+              </div>
 
-                <div className={`grid gap-4 ${isGridView ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}>
-                  <div className="group relative p-4 rounded-2xl bg-[#1E293B] border border-[#334155] hover:border-slate-500 transition-all shadow-md flex flex-col justify-between">
-                    <div className="space-y-2">
-                      <div className="flex items-start justify-between">
-                        <Typography variant="subtitle2" className="font-semibold text-white">
-                          Welcome to Beginning 🚀
-                        </Typography>
-                        <Tooltip title="Pinned note">
-                          <PushPinOutlinedIcon fontSize="small" className="text-sky-400" />
-                        </Tooltip>
-                      </div>
-                      <Typography variant="body2" className="text-xs text-[#94A3B8] leading-relaxed">
-                        A Google Keep-inspired productivity suite with public workspace, dark aesthetic, and a high-security Private Space locked behind a 4-digit PIN.
+              {/* Interactive Auth Action Triggers */}
+              <div className="pt-2 flex flex-wrap items-center gap-2">
+                {!user ? (
+                  <>
+                    <Button
+                      onClick={() => openAuthModal("register")}
+                      size="small"
+                      variant="contained"
+                      sx={{
+                        backgroundColor: "#38BDF8",
+                        color: "#0F172A",
+                        fontWeight: 600,
+                        "&:hover": { backgroundColor: "#0284C7" },
+                        fontSize: "12px",
+                      }}
+                    >
+                      Test Register + OTP Flow
+                    </Button>
+                    <Button
+                      onClick={() => openAuthModal("login")}
+                      size="small"
+                      variant="outlined"
+                      sx={{
+                        borderColor: "#334155",
+                        color: "#F8FAFC",
+                        "&:hover": { borderColor: "#64748B", backgroundColor: "#0F172A" },
+                        fontSize: "12px",
+                      }}
+                    >
+                      Test Login Flow
+                    </Button>
+                    <Button
+                      onClick={() => openAuthModal("forgot")}
+                      size="small"
+                      variant="text"
+                      sx={{
+                        color: "#94A3B8",
+                        "&:hover": { color: "#F8FAFC" },
+                        fontSize: "12px",
+                      }}
+                    >
+                      Test Forgot Password
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      onClick={logout}
+                      size="small"
+                      variant="outlined"
+                      color="error"
+                      sx={{ fontSize: "12px" }}
+                    >
+                      Sign Out
+                    </Button>
+                    <span className="text-xs text-[#94A3B8] ml-2">
+                      Ready for Phase 3: Public Notes Workspace!
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Pinned Notes Preview */}
+            <div className="space-y-3">
+              <Typography variant="body2" className="font-medium text-[#94A3B8] uppercase tracking-wider text-xs">
+                Pinned Notes Preview
+              </Typography>
+
+              <div className={`grid gap-4 ${isGridView ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}>
+                <div className="group relative p-4 rounded-2xl bg-[#1E293B] border border-[#334155] hover:border-slate-500 transition-all shadow-md flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between">
+                      <Typography variant="subtitle2" className="font-semibold text-white">
+                        Welcome to Beginning 🚀
                       </Typography>
+                      <Tooltip title="Pinned note">
+                        <PushPinOutlinedIcon fontSize="small" className="text-sky-400" />
+                      </Tooltip>
                     </div>
-                    <div className="mt-4 flex items-center justify-between pt-2 border-t border-[#334155]/60 text-[11px] text-[#94A3B8]">
-                      <span className="px-2 py-0.5 rounded-full bg-[#0F172A] border border-[#334155] text-sky-400">
-                        #system
-                      </span>
-                      <span>Just now</span>
-                    </div>
+                    <Typography variant="body2" className="text-xs text-[#94A3B8] leading-relaxed">
+                      A Google Keep-inspired productivity suite with public workspace, dark aesthetic, and a high-security Private Space locked behind a 4-digit PIN.
+                    </Typography>
                   </div>
-
-                  <div className="group relative p-4 rounded-2xl bg-[#1E293B] border border-[#334155] hover:border-slate-500 transition-all shadow-md flex flex-col justify-between">
-                    <div className="space-y-2">
-                      <div className="flex items-start justify-between">
-                        <Typography variant="subtitle2" className="font-semibold text-white">
-                          Private Space Gatekeeper 🔒
-                        </Typography>
-                        <Tooltip title="Pinned note">
-                          <PushPinOutlinedIcon fontSize="small" className="text-amber-400" />
-                        </Tooltip>
-                      </div>
-                      <Typography variant="body2" className="text-xs text-[#94A3B8] leading-relaxed">
-                        Private notes are completely isolated. Requires a 4-digit bcrypt-hashed PIN with self-serve token email reset through Nodemailer.
-                      </Typography>
-                    </div>
-                    <div className="mt-4 flex items-center justify-between pt-2 border-t border-[#334155]/60 text-[11px] text-[#94A3B8]">
-                      <span className="px-2 py-0.5 rounded-full bg-[#0F172A] border border-[#334155] text-amber-400">
-                        #security
-                      </span>
-                      <span>Phase 4</span>
-                    </div>
+                  <div className="mt-4 flex items-center justify-between pt-2 border-t border-[#334155]/60 text-[11px] text-[#94A3B8]">
+                    <span className="px-2 py-0.5 rounded-full bg-[#0F172A] border border-[#334155] text-sky-400">
+                      #system
+                    </span>
+                    <span>Phase 1</span>
                   </div>
+                </div>
 
-                  <div className="group relative p-4 rounded-2xl bg-[#1E293B] border border-[#334155] hover:border-slate-500 transition-all shadow-md flex flex-col justify-between">
-                    <div className="space-y-2">
-                      <div className="flex items-start justify-between">
-                        <Typography variant="subtitle2" className="font-semibold text-white">
-                          Offline PWA Architecture 📱
-                        </Typography>
-                        <Tooltip title="Pinned note">
-                          <PushPinOutlinedIcon fontSize="small" className="text-indigo-400" />
-                        </Tooltip>
-                      </div>
-                      <Typography variant="body2" className="text-xs text-[#94A3B8] leading-relaxed">
-                        Full Dexie IndexedDB client persistence with Service Worker caching for seamless note-taking without an active internet connection.
+                <div className="group relative p-4 rounded-2xl bg-[#1E293B] border border-[#334155] hover:border-slate-500 transition-all shadow-md flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between">
+                      <Typography variant="subtitle2" className="font-semibold text-white">
+                        Authentication &amp; Nodemailer ✉️
                       </Typography>
+                      <Tooltip title="Pinned note">
+                        <PushPinOutlinedIcon fontSize="small" className="text-sky-400" />
+                      </Tooltip>
                     </div>
-                    <div className="mt-4 flex items-center justify-between pt-2 border-t border-[#334155]/60 text-[11px] text-[#94A3B8]">
-                      <span className="px-2 py-0.5 rounded-full bg-[#0F172A] border border-[#334155] text-indigo-400">
-                        #pwa
-                      </span>
-                      <span>Phase 5</span>
+                    <Typography variant="body2" className="text-xs text-[#94A3B8] leading-relaxed">
+                      6-digit OTP email validation, Bcrypt password hashing, and HttpOnly JWT cookie sessions for verified users.
+                    </Typography>
+                  </div>
+                  <div className="mt-4 flex items-center justify-between pt-2 border-t border-[#334155]/60 text-[11px] text-[#94A3B8]">
+                    <span className="px-2 py-0.5 rounded-full bg-[#0F172A] border border-[#334155] text-emerald-400">
+                      #auth
+                    </span>
+                    <span>Phase 2</span>
+                  </div>
+                </div>
+
+                <div className="group relative p-4 rounded-2xl bg-[#1E293B] border border-[#334155] hover:border-slate-500 transition-all shadow-md flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between">
+                      <Typography variant="subtitle2" className="font-semibold text-white">
+                        Private Space Gatekeeper 🔒
+                      </Typography>
+                      <Tooltip title="Pinned note">
+                        <PushPinOutlinedIcon fontSize="small" className="text-amber-400" />
+                      </Tooltip>
                     </div>
+                    <Typography variant="body2" className="text-xs text-[#94A3B8] leading-relaxed">
+                      Private notes are completely isolated. Requires a 4-digit bcrypt-hashed PIN with self-serve token email reset through Nodemailer.
+                    </Typography>
+                  </div>
+                  <div className="mt-4 flex items-center justify-between pt-2 border-t border-[#334155]/60 text-[11px] text-[#94A3B8]">
+                    <span className="px-2 py-0.5 rounded-full bg-[#0F172A] border border-[#334155] text-amber-400">
+                      #security
+                    </span>
+                    <span>Phase 4</span>
                   </div>
                 </div>
               </div>
