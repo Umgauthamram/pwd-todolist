@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
       "A modern Google Keep-inspired productivity suite with public workspace, monochrome black and white aesthetics, and an isolated 4-digit PIN Private Space.",
     start_url: "/",
     display: "standalone",
-    background_color: "#000000",
+    background_color: "#ffffff",
     theme_color: "#000000",
     orientation: "portrait",
     icons: [

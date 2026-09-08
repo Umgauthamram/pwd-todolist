@@ -1,29 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#121212"/>
-      <stop offset="100%" stop-color="#000000"/>
-    </linearGradient>
-  </defs>
+  <!-- Crisp White Background with rounded squircle -->
+  <rect width="512" height="512" rx="128" fill="#FFFFFF"/>
+  <rect x="8" y="8" width="496" height="496" rx="120" fill="none" stroke="#E4E4E7" stroke-width="8"/>
 
-  <!-- Background rounded squircle -->
-  <rect width="512" height="512" rx="128" fill="url(#bgGrad)"/>
-  <rect x="8" y="8" width="496" height="496" rx="120" fill="none" stroke="#27272a" stroke-width="8"/>
-
-  <!-- Lightbulb (Google Keep style) in crisp White -->
-  <path d="M256 95 C185 95 135 148 135 218 C135 264 163 304 204 330 L204 366 C204 374 210 380 218 380 L294 380 C302 380 308 374 308 366 L308 330 C349 304 377 264 377 218 C377 148 327 95 256 95 Z" fill="#FFFFFF"/>
+  <!-- Black Central Emblem / Badge -->
+  <rect x="166" y="90" width="180" height="180" rx="44" fill="#000000"/>
   
-  <!-- Base threads -->
-  <rect x="220" y="392" width="72" height="14" rx="7" fill="#A1A1AA"/>
-  <rect x="232" y="416" width="48" height="12" rx="6" fill="#71717A"/>
+  <!-- Stylized White Lettermark "B" -->
+  <text x="256" y="222" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="130" font-weight="900" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">B</text>
 
-  <!-- Shield Badge with Lock -->
-  <circle cx="365" cy="365" r="74" fill="#000000" stroke="#FFFFFF" stroke-width="8"/>
-  <!-- Lock body -->
-  <rect x="340" y="350" width="50" height="42" rx="8" fill="#FFFFFF"/>
-  <!-- Lock shackle -->
-  <path d="M348 350 L348 332 C348 322 356 314 365 314 C374 314 382 322 382 332 L382 350" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"/>
-  <!-- Keyhole -->
-  <circle cx="365" cy="367" r="4" fill="#000000"/>
-  <rect x="363" y="367" width="4" height="10" fill="#000000"/>
+  <!-- "Beginning" Text in Solid Black -->
+  <text x="256" y="350" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="54" font-weight="800" fill="#000000" text-anchor="middle" letter-spacing="-1">Beginning</text>
+
+  <!-- Sleek Minimalist Subtitle -->
+  <text x="256" y="405" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="20" font-weight="600" fill="#71717A" text-anchor="middle" letter-spacing="3">NOTES &amp; PRIVATE SPACE</text>
 </svg>

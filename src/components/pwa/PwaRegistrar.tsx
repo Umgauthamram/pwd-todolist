@@ -145,8 +145,8 @@ export default function PwaRegistrar() {
         <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-md z-40 p-3.5 rounded-2xl bg-[#0e0e10] border border-[#262626] shadow-2xl flex items-center justify-between gap-3 text-white backdrop-blur-xl">
           <div className="flex items-center gap-3 min-w-0">
             {/* App Icon */}
-            <div className="w-10 h-10 rounded-xl bg-black border border-[#333] flex items-center justify-center shrink-0">
-              <img src="/icon-192.png" alt="Beginning" className="w-6 h-6 object-contain" />
+            <div className="w-10 h-10 rounded-xl bg-white border border-neutral-300 flex items-center justify-center shrink-0 overflow-hidden p-0.5">
+              <img src="/icon-192.png" alt="Beginning" className="w-full h-full object-contain rounded-lg" />
             </div>
             <div className="min-w-0">
               <p className="text-xs font-semibold text-white truncate">Install Beginning App</p>
@@ -192,8 +192,8 @@ export default function PwaRegistrar() {
         <DialogContent sx={{ p: 3 }}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-black border border-[#333] flex items-center justify-center">
-                <img src="/icon-192.png" alt="Beginning" className="w-5 h-5 object-contain" />
+              <div className="w-9 h-9 rounded-xl bg-white border border-neutral-300 flex items-center justify-center overflow-hidden p-0.5">
+                <img src="/icon-192.png" alt="Beginning" className="w-full h-full object-contain rounded-lg" />
               </div>
               <h3 className="text-sm font-semibold text-white">Install Beginning</h3>
             </div>
