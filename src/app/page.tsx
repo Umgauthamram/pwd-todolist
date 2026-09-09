@@ -465,45 +465,49 @@ export default function HomePage() {
       </header>
 
       {/* REQUIREMENT 1: Top Bar Navigation (replacing sidebar) */}
-      <nav aria-label="Main Navigation" className="sticky top-16 z-30 bg-black/95 backdrop-blur-md border-b border-[#262626] px-4 py-2 flex items-center justify-between gap-3 overflow-x-auto no-scrollbar">
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 min-w-0">
+      <nav aria-label="Main Navigation" className="sticky top-16 z-30 bg-black/95 backdrop-blur-md border-b border-[#262626] px-3 sm:px-4 py-2 flex items-center justify-between sm:justify-start gap-2 sm:gap-3 overflow-x-auto no-scrollbar">
+        <div className="flex items-center justify-around sm:justify-start gap-1 sm:gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar py-0.5 min-w-0">
           {navItems.map((item) => {
             const isActive = activeTab === item.id && !selectedLabel;
             return (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all shrink-0 cursor-pointer ${
-                  isActive
-                    ? "bg-white text-black font-semibold shadow-sm"
-                    : "text-neutral-400 hover:text-white hover:bg-neutral-900 border border-transparent hover:border-[#262626]"
-                }`}
-              >
-                <span className={isActive ? "text-black" : "text-neutral-400"}>
-                  {item.icon}
-                </span>
-                <span className="whitespace-nowrap">{item.label}</span>
-                {item.badge && (
-                  <span
-                    className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
-                      isActive
-                        ? "bg-black text-white"
-                        : "bg-neutral-900 text-neutral-300 border border-[#262626]"
-                    }`}
-                  >
-                    {item.badge}
+              <Tooltip key={item.id} title={item.label} enterDelay={500}>
+                <button
+                  onClick={() => handleNavClick(item.id)}
+                  title={item.label}
+                  aria-label={item.label}
+                  className={`flex items-center justify-center gap-2 p-2 sm:px-3.5 sm:py-1.5 rounded-full text-xs font-medium transition-all shrink-0 cursor-pointer ${
+                    isActive
+                      ? "bg-white text-black font-semibold shadow-sm"
+                      : "text-neutral-400 hover:text-white hover:bg-neutral-900 border border-transparent hover:border-[#262626]"
+                  }`}
+                >
+                  <span className={isActive ? "text-black" : "text-neutral-400"}>
+                    {item.icon}
                   </span>
-                )}
-                {item.count !== undefined && item.count > 0 && (
-                  <span
-                    className={`text-xs font-mono font-medium ${
-                      isActive ? "text-neutral-700" : "text-neutral-500"
-                    }`}
-                  >
-                    {item.count}
-                  </span>
-                )}
-              </button>
+                  {/* On mobile: show only icons. On desktop: show label, badge, count */}
+                  <span className="whitespace-nowrap hidden sm:inline">{item.label}</span>
+                  {item.badge && (
+                    <span
+                      className={`hidden sm:inline text-[10px] px-1.5 py-0.5 rounded font-mono ${
+                        isActive
+                          ? "bg-black text-white"
+                          : "bg-neutral-900 text-neutral-300 border border-[#262626]"
+                      }`}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                  {item.count !== undefined && item.count > 0 && (
+                    <span
+                      className={`hidden sm:inline text-xs font-mono font-medium ${
+                        isActive ? "text-neutral-700" : "text-neutral-500"
+                      }`}
+                    >
+                      {item.count}
+                    </span>
+                  )}
+                </button>
+              </Tooltip>
             );
           })}
 
@@ -516,7 +520,7 @@ export default function HomePage() {
                   <button
                     key={lbl}
                     onClick={() => setSelectedLabel(isLabelActive ? null : lbl)}
-                    className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 cursor-pointer ${
+                    className={`flex items-center gap-1 px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 cursor-pointer ${
                       isLabelActive
                         ? "bg-white text-black font-semibold"
                         : "text-neutral-400 hover:text-white hover:bg-neutral-900 border border-[#262626]"
@@ -529,19 +533,6 @@ export default function HomePage() {
               })}
             </div>
           )}
-        </div>
-
-        {/* Mobile Search Input */}
-        <div className="md:hidden flex-1 max-w-[170px] shrink-0">
-          <div className="flex items-center bg-[#0e0e10] border border-[#262626] rounded-xl px-2 py-1">
-            <SearchIcon className="text-neutral-500 mr-1" sx={{ fontSize: 14 }} />
-            <InputBase
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full text-xs text-white"
-            />
-          </div>
         </div>
       </nav>
 
