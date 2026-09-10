@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
@@ -36,6 +36,7 @@ interface SearchScreenProps {
   onRestoreFromTrash: (note: NoteItem) => void;
   onDeletePermanently: (note: NoteItem) => void;
   allLabels: string[];
+  user?: { email: string } | null;
 }
 
 type ScopeFilter = "all" | "notes" | "archive" | "private";
@@ -56,35 +57,62 @@ export default function SearchScreen({
   onRestoreFromTrash,
   onDeletePermanently,
   allLabels,
+  user,
 }: SearchScreenProps) {
   const [query, setQuery] = useState("");
   const [scope, setScope] = useState<ScopeFilter>("all");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [animating, setAnimating] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Focus input automatically when opened
+  // Smooth expansion animation lifecycle
   useEffect(() => {
+    let timer: NodeJS.Timeout;
+    let rafId: number;
+
     if (open) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 50);
+      setMounted(true);
+      rafId = requestAnimationFrame(() => {
+        rafId = requestAnimationFrame(() => {
+          setAnimating(true);
+          inputRef.current?.focus();
+        });
+      });
     } else {
-      setQuery("");
-      setSelectedTag(null);
-      setScope("all");
+      setAnimating(false);
+      timer = setTimeout(() => {
+        setMounted(false);
+        setQuery("");
+        setSelectedTag(null);
+        setScope("all");
+      }, 260);
     }
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(timer);
+    };
   }, [open]);
+
+  const handleClose = useCallback(() => {
+    inputRef.current?.blur();
+    setAnimating(false);
+    setTimeout(() => {
+      onClose();
+    }, 240);
+  }, [onClose]);
 
   // Handle ESC key to close search
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && open) {
-        onClose();
+        handleClose();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, onClose]);
+  }, [open, handleClose]);
 
   // Determine searchable notes pool based on scope and private status
   const searchableNotes = useMemo(() => {
@@ -129,26 +157,46 @@ export default function SearchScreen({
     });
   }, [searchableNotes, query, selectedTag]);
 
-  if (!open) return null;
+  if (!mounted && !open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black flex flex-col selection:bg-white selection:text-black">
-      {/* Search Header Bar */}
-      <header className="sticky top-0 z-10 border-b border-[#262626] bg-black/95 backdrop-blur-md px-3 sm:px-6 h-16 flex items-center justify-between gap-2 sm:gap-4">
-        {/* Back Button */}
-        <Tooltip title="Back to workspace (Esc)">
-          <IconButton
-            onClick={onClose}
-            className="text-neutral-400 hover:text-white hover:bg-neutral-900 shrink-0"
-            size="medium"
-            aria-label="Back"
-          >
-            <ArrowBackIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
+    <div
+      className={`fixed inset-0 z-50 bg-black flex flex-col selection:bg-white selection:text-black transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        animating ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+      }`}
+    >
+      {/* Search Header Bar with smooth expansion */}
+      <header
+        className={`sticky top-0 z-10 border-b border-[#262626] bg-black/95 backdrop-blur-md px-3 sm:px-6 h-16 flex items-center justify-between gap-2 sm:gap-4 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          animating ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-80"
+        }`}
+      >
+        {/* Back Button with slide-in animation */}
+        <div
+          className={`transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            animating ? "opacity-100 translate-x-0 scale-100" : "opacity-0 -translate-x-3 scale-90"
+          }`}
+        >
+          <Tooltip title="Back to workspace (Esc)">
+            <IconButton
+              onClick={handleClose}
+              className="text-neutral-400 hover:text-white hover:bg-neutral-900 shrink-0"
+              size="medium"
+              aria-label="Back"
+            >
+              <ArrowBackIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </div>
 
-        {/* Search Input Box */}
-        <div className="flex-1 max-w-3xl flex items-center bg-[#212121] hover:bg-[#282828] focus-within:bg-[#282828] rounded-xl px-3 py-1.5 transition-all">
+        {/* Search Input Box (Picture 2 UI Style with expansion scale animation) */}
+        <div
+          className={`flex-1 max-w-3xl flex items-center bg-[#212121] hover:bg-[#282828] focus-within:bg-[#282828] rounded-xl px-3 py-1.5 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            animating
+              ? "scale-100 opacity-100 shadow-md ring-1 ring-white/10"
+              : "scale-[0.97] opacity-80 ring-0"
+          }`}
+        >
           <SearchIcon className="text-neutral-400 mr-2 shrink-0" fontSize="small" />
           <InputBase
             inputRef={inputRef}
@@ -170,44 +218,42 @@ export default function SearchScreen({
           )}
         </div>
 
-        {/* View Toggle Segmented Control */}
-        <div className="flex items-center bg-[#212121] rounded-xl p-0.5 shrink-0">
-          <Tooltip title="Grid view">
-            <button
-              type="button"
-              onClick={() => setIsGridView(true)}
-              className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                isGridView
-                  ? "bg-white text-black shadow-sm"
-                  : "text-neutral-400 hover:text-white hover:bg-neutral-900"
-              }`}
-              aria-label="Grid view"
+        {/* Right Corner: Grid / List view toggle (ONLY ONE ICON AT A TIME) + Profile Avatar */}
+        <div
+          className={`flex items-center gap-1.5 sm:gap-2 shrink-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            animating ? "opacity-100 translate-x-0" : "opacity-0 translate-x-3"
+          }`}
+        >
+          <Tooltip title={isGridView ? "Switch to list view" : "Switch to grid view"}>
+            <IconButton
+              onClick={() => setIsGridView(!isGridView)}
+              className="text-neutral-400 hover:text-white hover:bg-neutral-900 border border-transparent hover:border-[#262626]"
+              size="small"
+              aria-label={isGridView ? "Switch to list view" : "Switch to grid view"}
             >
-              <GridViewIcon fontSize="small" sx={{ fontSize: 17 }} />
-            </button>
+              {isGridView ? (
+                <ViewStreamIcon fontSize="small" />
+              ) : (
+                <GridViewIcon fontSize="small" />
+              )}
+            </IconButton>
           </Tooltip>
-          <Tooltip title="List view">
-            <button
-              type="button"
-              onClick={() => setIsGridView(false)}
-              className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                !isGridView
-                  ? "bg-white text-black shadow-sm"
-                  : "text-neutral-400 hover:text-white hover:bg-neutral-900"
-              }`}
-              aria-label="List view"
-            >
-              <ViewStreamIcon fontSize="small" sx={{ fontSize: 17 }} />
-            </button>
-          </Tooltip>
+
+          {user && (
+            <div className="w-7 h-7 rounded-full font-bold text-xs flex items-center justify-center bg-white text-black shrink-0 shadow-sm">
+              {user.email.charAt(0).toUpperCase()}
+            </div>
+          )}
         </div>
       </header>
 
       {/* Scope & Tag Filter Bar */}
-      <div className="border-b border-[#262626] bg-[#070708] px-4 sm:px-6 py-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
-        <span className="text-[11px] font-mono text-neutral-500 uppercase tracking-wider hidden sm:inline mr-1">
-          Scope:
-        </span>
+      <div
+        className={`border-b border-[#262626] bg-[#070708] px-4 sm:px-6 py-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0 transition-all duration-300 delay-50 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          animating ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"
+        }`}
+      >
+   
 
         {/* All notes */}
         <button
@@ -286,8 +332,12 @@ export default function SearchScreen({
         )}
       </div>
 
-      {/* Main Results Canvas */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+      {/* Main Results Canvas with smooth fade & slide up */}
+      <div
+        className={`flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 transition-all duration-300 delay-75 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          animating ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
+        }`}
+      >
         <div className="max-w-5xl mx-auto space-y-6">
           {/* Active Search Status Banner */}
           {(query.trim() || selectedTag) && (

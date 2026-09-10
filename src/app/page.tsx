@@ -441,17 +441,16 @@ export default function HomePage() {
       id: "notes" as NavItem,
       label: "Notes",
       icon: <LightbulbOutlinedIcon fontSize="small" />,
-      count: notes.filter((n) => !n.isArchived && !n.isTrashed).length,
     },
     {
       id: "private" as NavItem,
-      label: "Secure",
+      label: "Lock",
       icon: isPrivateUnlocked ? (
         <LockOpenOutlinedIcon fontSize="small" className="text-white" />
       ) : (
         <LockOutlinedIcon fontSize="small" />
       ),
-      badge: !user?.hasPin ? "Set PIN" : isPrivateUnlocked ? "Unlocked" : "Locked",
+      badge: !user?.hasPin ? "Set PIN" : isPrivateUnlocked ? "" : "",
       count: isPrivateUnlocked
         ? privateNotes.filter((n) => !n.isArchived && !n.isTrashed).length
         : undefined,
@@ -495,7 +494,7 @@ export default function HomePage() {
               {activeTab === "notes"
                 ? "Notes"
                 : activeTab === "private"
-                ? "Secure"
+                ? "Lock"
                 : activeTab === "archive"
                 ? "Archive"
                 : activeTab === "trash"
@@ -510,18 +509,17 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Center: Search Bar in Top */}
-        <div className="flex-1 max-w-xl mx-auto flex items-center min-w-0 px-1 sm:px-3">
+        {/* Center: Search Bar in Top (Picture 2 UI Style) */}
+        <div className="flex-1 max-w-3xl mx-auto flex items-center min-w-0 px-1 sm:px-3">
           <button
             type="button"
             onClick={() => setIsSearchOpen(true)}
-            className="w-full flex items-center gap-2.5 px-3.5 py-2 bg-[#202124] hover:bg-[#28292c] text-neutral-400 hover:text-white rounded-full transition-all border border-transparent hover:border-[#3c4043] cursor-pointer text-xs sm:text-sm text-left shadow-sm"
+            className="w-full flex items-center bg-[#212121] hover:bg-[#282828] text-neutral-400 hover:text-white rounded-xl px-3 py-1.5 sm:px-3 sm:py-2 transition-all duration-200 border border-transparent hover:border-[#333333] cursor-pointer text-xs sm:text-sm text-left shadow-sm group"
             aria-label="Search notes"
           >
-            <SearchIcon fontSize="small" className="text-neutral-400 shrink-0" />
-            <span className="truncate flex-1">Search your notes...</span>
-            <span className="hidden md:inline-block text-[10px] font-mono text-neutral-500 bg-[#141517] px-1.5 py-0.5 rounded border border-[#2e2f33]">
-              Ctrl K
+            <SearchIcon fontSize="small" className="text-neutral-400 mr-2 shrink-0 group-hover:text-white transition-colors" />
+            <span className="truncate flex-1 text-neutral-400 group-hover:text-neutral-300 transition-colors">
+              Search notes, content, checklists, or #labels...
             </span>
           </button>
         </div>
@@ -1060,10 +1058,8 @@ export default function HomePage() {
 
             {/* Trash Controls Banner */}
             {activeTab === "trash" && (
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-[#202124] shadow-md gap-3">
-                <div className="text-xs text-neutral-300">
-                  <span className="font-semibold text-white">Trash Bin:</span> Notes in trash can be restored or permanently removed.
-                </div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between shadow-md gap-3">
+            
                 {notes.filter((n) => n.isTrashed).length > 0 && (
                   <Button
                     onClick={handleEmptyTrash}
@@ -1322,6 +1318,7 @@ export default function HomePage() {
         onRestoreFromTrash={handleRestoreFromTrash}
         onDeletePermanently={handleDeletePermanently}
         allLabels={allLabels}
+        user={user}
       />
     </Box>
   );
