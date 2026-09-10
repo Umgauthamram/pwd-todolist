@@ -175,56 +175,40 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     title: string;
     subtitle: string;
     badge: string;
-    icon: React.ReactNode;
+
   }[] = [
     {
       id: "profile",
       title: "Account Profile",
-      subtitle: user ? `${user.email} • Account details and sign out` : "Guest session • Sign in / register",
-      badge: user ? "Signed In" : "Guest",
-      icon: <PersonIcon sx={{ fontSize: 20 }} />,
+      subtitle: user ? `${user.email}` : "",
+      badge: user ? "" : "Guest",
     },
     {
       id: "pin",
       title: "Private Space 4-Digit PIN",
-      subtitle: "Bcrypt-encrypted isolation for sensitive notes",
+      subtitle: "",
       badge: user?.hasPin ? "Configured" : "Not Set",
-      icon: <LockOutlinedIcon sx={{ fontSize: 20 }} />,
+  
     },
     {
       id: "password",
       title: "Password & Security",
-      subtitle: "Update your primary account login credentials",
-      badge: "Security",
-      icon: <VpnKeyIcon sx={{ fontSize: 20 }} />,
+      subtitle: "",
+      badge: "",
     },
-    {
-      id: "pwa",
-      title: "PWA & Offline Storage",
-      subtitle: `Service Worker, IndexedDB caching (${cachedNotesCount} notes), and install`,
-      badge: isOnline ? "Online" : "Offline",
-      icon: <CloudSyncOutlinedIcon sx={{ fontSize: 20 }} />,
-    },
+   
   ];
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      {/* ========================================================================= */}
-      {/* MAIN SCREEN: Sub Titles Only (activeSection === null) */}
-      {/* ========================================================================= */}
       {activeSection === null && (
         <div className="space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between pb-4 border-b border-[#262626]">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-[#262626] flex items-center justify-center text-white">
-                <SettingsOutlinedIcon />
-              </div>
+          
               <div>
                 <h1 className="text-xl font-bold text-white tracking-tight">Settings</h1>
-                <p className="text-xs text-neutral-400 mt-0.5">
-                  Select a section below to configure its options.
-                </p>
               </div>
             </div>
 
@@ -243,7 +227,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
                   "&:hover": { borderColor: "#525252", backgroundColor: "rgba(255,255,255,0.05)" },
                 }}
               >
-                Back to Notes
+                Back 
               </Button>
             )}
           </div>
@@ -258,9 +242,6 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
                 className="w-full p-4 sm:p-5 rounded-2xl bg-[#212121] hover:bg-[#282828] transition-all flex items-center justify-between gap-4 text-left cursor-pointer group shadow-sm"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center text-white shrink-0 transition-colors">
-                    {sec.icon}
-                  </div>
                   <div className="min-w-0">
                     <h2 className="text-sm sm:text-base font-semibold text-white tracking-tight group-hover:text-white transition-colors truncate">
                       {sec.title}
