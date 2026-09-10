@@ -552,23 +552,20 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => setActiveTab("settings")}
-              className={`flex items-center gap-2 cursor-pointer p-0.5 sm:px-2 sm:py-1 rounded-full transition-all border ${
+              className={`flex items-center justify-center cursor-pointer p-0.5 rounded-full transition-all border ${
                 activeTab === "settings"
-                  ? "bg-white text-black border-white font-semibold shadow-sm"
-                  : "bg-[#0e0e10] hover:bg-neutral-900 text-white border-[#262626] hover:border-neutral-500"
+                  ? "border-white"
+                  : "border-transparent hover:border-[#262626]"
               }`}
               aria-label="Settings and Profile"
             >
               <div
-                className={`w-6 h-6 rounded-full font-bold text-xs flex items-center justify-center shrink-0 ${
-                  activeTab === "settings" ? "bg-black text-white" : "bg-white text-black"
+                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full font-bold text-xs flex items-center justify-center shrink-0 ${
+                  activeTab === "settings" ? "bg-white text-black ring-2 ring-white/50" : "bg-white text-black"
                 }`}
               >
                 {user.email.charAt(0).toUpperCase()}
               </div>
-              <span className="text-xs font-medium hidden md:inline max-w-[100px] truncate">
-                {user.email.split("@")[0]}
-              </span>
             </button>
           </Tooltip>
         </div>
