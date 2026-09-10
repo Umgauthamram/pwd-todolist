@@ -501,7 +501,7 @@ export default function HomePage() {
           </Tooltip>
 
           {/* Grid / List View Segmented Control */}
-          <div className="flex items-center bg-[#0e0e10] border border-[#262626] rounded-xl p-0.5">
+          <div className="flex items-center bg-[#202124] rounded-xl p-0.5">
             <Tooltip title="Grid view">
               <button
                 type="button"
@@ -870,7 +870,7 @@ export default function HomePage() {
 
             {/* PRIVATE SPACE: UNLOCKED ACTIVE BANNER */}
             {activeTab === "private" && isPrivateUnlocked && (
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#0e0e10] border border-[#262626] shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#202124] shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-neutral-700 flex items-center justify-center text-white shadow-md">
                     <LockOpenOutlinedIcon />
@@ -930,7 +930,7 @@ export default function HomePage() {
 
             {/* Active Label Banner */}
             {selectedLabel && (
-              <div className="flex items-center justify-between p-3 rounded-xl bg-[#0e0e10] border border-[#262626]">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[#202124] shadow-md">
                 <div className="flex items-center gap-2 text-sm text-white">
                   <LabelOutlinedIcon fontSize="small" />
                   <span>Filtered by tag:</span>
@@ -948,7 +948,7 @@ export default function HomePage() {
 
             {/* Trash Controls Banner */}
             {activeTab === "trash" && (
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-[#0e0e10] border border-[#262626] gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-[#202124] shadow-md gap-3">
                 <div className="text-xs text-neutral-300">
                   <span className="font-semibold text-white">Trash Bin:</span> Notes in trash can be restored or permanently removed.
                 </div>

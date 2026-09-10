@@ -148,7 +148,7 @@ export default function SearchScreen({
         </Tooltip>
 
         {/* Search Input Box */}
-        <div className="flex-1 max-w-3xl flex items-center bg-[#0e0e10] border border-[#262626] hover:border-neutral-500 focus-within:border-white rounded-xl px-3 py-1.5 transition-all">
+        <div className="flex-1 max-w-3xl flex items-center bg-[#202124] hover:bg-[#28292d] focus-within:bg-[#28292d] rounded-xl px-3 py-1.5 transition-all">
           <SearchIcon className="text-neutral-400 mr-2 shrink-0" fontSize="small" />
           <InputBase
             inputRef={inputRef}
@@ -171,7 +171,7 @@ export default function SearchScreen({
         </div>
 
         {/* View Toggle Segmented Control */}
-        <div className="flex items-center bg-[#0e0e10] border border-[#262626] rounded-xl p-0.5 shrink-0">
+        <div className="flex items-center bg-[#202124] rounded-xl p-0.5 shrink-0">
           <Tooltip title="Grid view">
             <button
               type="button"

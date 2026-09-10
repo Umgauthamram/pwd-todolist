@@ -58,12 +58,12 @@ export default function NoteCard({
 }: NoteCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
-  const activeColorObj = NOTE_COLORS.find(
-    (c) => c.bg.toLowerCase() === (note.color || "#0e0e10").toLowerCase()
-  );
-  const borderColor = isHovered
-    ? "#737373"
-    : activeColorObj?.border || "#262626";
+  const noteBg =
+    note.color && note.color !== "#0e0e10"
+      ? note.color
+      : isHovered
+      ? "#28292d"
+      : "#202124";
 
   return (
     <div
@@ -71,10 +71,9 @@ export default function NoteCard({
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => onEdit(note)}
       style={{
-        backgroundColor: note.color || "#0e0e10",
-        borderColor,
+        backgroundColor: noteBg,
       }}
-      className={`group relative rounded-2xl border transition-all duration-200 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-between ${
+      className={`group relative rounded-2xl transition-all duration-200 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-between ${
         viewMode === "list"
           ? "p-4 sm:p-5 w-full max-w-2xl mx-auto"
           : "p-3 sm:p-4 w-full h-fit"
@@ -141,7 +140,7 @@ export default function NoteCard({
             {note.labels.map((lbl) => (
               <span
                 key={lbl}
-                className="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full bg-black/60 text-neutral-300 border border-[#262626] font-medium"
+                className="text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full bg-black/40 text-neutral-300 font-medium"
               >
                 #{lbl}
               </span>
@@ -153,7 +152,7 @@ export default function NoteCard({
       {/* Bottom Row: Actions Bar */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`mt-3 sm:mt-4 pt-2 border-t border-[#262626] flex items-center justify-between text-xs text-neutral-400 transition-opacity duration-150 ${
+        className={`mt-3 sm:mt-4 pt-2 border-t border-white/5 flex items-center justify-between text-xs text-neutral-400 transition-opacity duration-150 ${
           isHovered ? "opacity-100" : "opacity-75 sm:opacity-0"
         }`}
       >

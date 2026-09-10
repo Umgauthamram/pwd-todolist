@@ -121,15 +121,14 @@ export default function NoteModal({
       slotProps={{
         paper: {
           sx: {
-            backgroundColor: color,
-            borderColor: activeBorder,
+            backgroundColor: color && color !== "#0e0e10" ? color : "#202124",
             color: "#ffffff",
             borderRadius: "20px",
-            border: `1px solid ${activeBorder}`,
+            border: "none",
             backgroundImage: "none",
             transition: "background-color 0.2s ease",
             overflow: "hidden",
-            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.7)",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.8)",
           },
         },
       }}
