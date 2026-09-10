@@ -6,13 +6,12 @@ export interface NoteColor {
 }
 
 export const NOTE_COLORS: NoteColor[] = [
-  { id: "default", name: "Charcoal Gray", bg: "#202124", border: "transparent" },
-  { id: "slate", name: "Slate Gray", bg: "#28292d", border: "transparent" },
-  { id: "ash", name: "Deep Ash", bg: "#1a1a1d", border: "transparent" },
-  { id: "steel", name: "Steel Gray", bg: "#26282b", border: "transparent" },
-  { id: "graphite", name: "Graphite", bg: "#2f3136", border: "transparent" },
-  { id: "zinc", name: "Dark Zinc", bg: "#1f1f23", border: "transparent" },
-  { id: "onyx", name: "Onyx", bg: "#141416", border: "transparent" },
-  { id: "black", name: "True Black", bg: "#000000", border: "transparent" },
-  { id: "stone", name: "Stone", bg: "#1c1917", border: "transparent" },
+  { id: "default", name: "Secondary Gray", bg: "#212121", border: "transparent" },
+  { id: "black", name: "Primary Black", bg: "#000000", border: "transparent" },
+  { id: "charcoal", name: "Charcoal", bg: "#1a1a1a", border: "transparent" },
+  { id: "graphite", name: "Graphite", bg: "#2a2a2a", border: "transparent" },
+  { id: "slate", name: "Slate Gray", bg: "#303030", border: "transparent" },
+  { id: "dark-zinc", name: "Dark Zinc", bg: "#171717", border: "transparent" },
+  { id: "ash", name: "Deep Ash", bg: "#141414", border: "transparent" },
+  { id: "stone", name: "Stone", bg: "#1f1f1f", border: "transparent" },
 ];

@@ -34,7 +34,7 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [color, setColor] = useState("#202124");
+  const [color, setColor] = useState("#212121");
   const [isPinned, setIsPinned] = useState(false);
   const [isArchived, setIsArchived] = useState(false);
   const [labels, setLabels] = useState<string[]>([]);
@@ -85,7 +85,7 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
   const resetForm = () => {
     setTitle("");
     setContent("");
-    setColor("#202124");
+    setColor("#212121");
     setIsPinned(false);
     setIsArchived(false);
     setLabels([]);
@@ -122,7 +122,7 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
             setIsExpanded(true);
             setTimeout(() => contentInputRef.current?.focus(), 50);
           }}
-          className="bg-[#202124] hover:bg-[#28292d] rounded-2xl p-3.5 shadow-xl transition-all flex items-center justify-between cursor-text"
+          className="bg-[#212121] hover:bg-[#282828] rounded-2xl p-3.5 shadow-xl transition-all flex items-center justify-between cursor-text"
         >
           <span className="text-neutral-400 text-sm font-medium select-none px-1">
             Take a note...
@@ -148,7 +148,7 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
     <div className="w-full max-w-2xl mx-auto">
       <div
         ref={containerRef}
-        style={{ backgroundColor: color && color !== "#0e0e10" ? color : "#202124" }}
+        style={{ backgroundColor: color && color !== "#0e0e10" && color !== "#202124" ? color : "#212121" }}
         className="rounded-2xl p-4 shadow-2xl transition-colors space-y-3"
       >
         {/* Title Input & Pin Button */}

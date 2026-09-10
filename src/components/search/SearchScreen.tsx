@@ -148,7 +148,7 @@ export default function SearchScreen({
         </Tooltip>
 
         {/* Search Input Box */}
-        <div className="flex-1 max-w-3xl flex items-center bg-[#202124] hover:bg-[#28292d] focus-within:bg-[#28292d] rounded-xl px-3 py-1.5 transition-all">
+        <div className="flex-1 max-w-3xl flex items-center bg-[#212121] hover:bg-[#282828] focus-within:bg-[#282828] rounded-xl px-3 py-1.5 transition-all">
           <SearchIcon className="text-neutral-400 mr-2 shrink-0" fontSize="small" />
           <InputBase
             inputRef={inputRef}
@@ -171,7 +171,7 @@ export default function SearchScreen({
         </div>
 
         {/* View Toggle Segmented Control */}
-        <div className="flex items-center bg-[#202124] rounded-xl p-0.5 shrink-0">
+        <div className="flex items-center bg-[#212121] rounded-xl p-0.5 shrink-0">
           <Tooltip title="Grid view">
             <button
               type="button"
@@ -354,7 +354,7 @@ export default function SearchScreen({
           {/* No Results Empty State */}
           {(query.trim() || selectedTag) && searchResults.length === 0 && (
             <div className="text-center py-20 px-4 space-y-4 max-w-md mx-auto">
-              <div className="w-16 h-16 mx-auto rounded-3xl bg-[#0e0e10] border border-[#262626] flex items-center justify-center text-neutral-400 shadow-xl">
+              <div className="w-16 h-16 mx-auto rounded-3xl bg-[#212121] flex items-center justify-center text-neutral-400 shadow-xl">
                 <SearchIcon sx={{ fontSize: 32 }} />
               </div>
               <div className="space-y-1">
@@ -371,7 +371,7 @@ export default function SearchScreen({
           {/* Idle Initial Search State */}
           {!query.trim() && !selectedTag && (
             <div className="text-center py-20 px-4 space-y-6 max-w-md mx-auto">
-              <div className="w-16 h-16 mx-auto rounded-3xl bg-[#0e0e10] border border-[#262626] flex items-center justify-center text-white shadow-xl">
+              <div className="w-16 h-16 mx-auto rounded-3xl bg-[#212121] flex items-center justify-center text-white shadow-xl">
                 <SearchIcon sx={{ fontSize: 32 }} />
               </div>
               <div className="space-y-2">

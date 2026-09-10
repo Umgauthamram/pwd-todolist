@@ -344,10 +344,10 @@ export default function AuthScreen() {
         </div>
 
         {/* Auth Box */}
-        <div className="bg-[#0e0e10] border border-[#262626] rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+        <div className="bg-[#212121] rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
           {/* Top Switcher Tabs (Login / Register) */}
           {(tab === "login" || tab === "register") && (
-            <div className="grid grid-cols-2 p-1 bg-black border border-[#262626] rounded-xl text-xs font-semibold select-none">
+            <div className="grid grid-cols-2 p-1 bg-black rounded-xl text-xs font-semibold select-none">
               <button
                 type="button"
                 onClick={() => setTab("login")}

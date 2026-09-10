@@ -121,7 +121,7 @@ export default function NoteModal({
       slotProps={{
         paper: {
           sx: {
-            backgroundColor: color && color !== "#0e0e10" ? color : "#202124",
+            backgroundColor: color && color !== "#0e0e10" && color !== "#202124" ? color : "#212121",
             color: "#ffffff",
             borderRadius: "20px",
             border: "none",

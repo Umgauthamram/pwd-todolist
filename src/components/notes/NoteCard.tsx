@@ -59,11 +59,11 @@ export default function NoteCard({
   const [isHovered, setIsHovered] = useState(false);
 
   const noteBg =
-    note.color && note.color !== "#0e0e10"
+    note.color && note.color !== "#0e0e10" && note.color !== "#202124"
       ? note.color
       : isHovered
-      ? "#28292d"
-      : "#202124";
+      ? "#2b2b2b"
+      : "#212121";
 
   return (
     <div
@@ -140,7 +140,7 @@ export default function NoteCard({
             {note.labels.map((lbl) => (
               <span
                 key={lbl}
-                className="text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full bg-black/40 text-neutral-300 font-medium"
+                className="text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full bg-[#000000] text-neutral-300 font-medium"
               >
                 #{lbl}
               </span>

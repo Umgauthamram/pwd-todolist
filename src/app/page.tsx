@@ -803,7 +803,7 @@ export default function HomePage() {
             }}
             className="flex items-center justify-center overflow-hidden transition-opacity mb-4"
           >
-            <div className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-[#121214] border border-[#262626] shadow-xl">
+            <div className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-[#212121] shadow-xl">
               <CircularProgress
                 size={18}
                 variant={isRefreshing ? "indeterminate" : "determinate"}
@@ -824,7 +824,7 @@ export default function HomePage() {
             {/* REQUIREMENT 1: PRIVATE SPACE LOCKED STATE (Keypad is optional, opens ONLY after clicking button) */}
             {activeTab === "private" && !isPrivateUnlocked && (
               <div className="text-center py-16 px-4 max-w-md mx-auto space-y-6">
-                <div className="w-20 h-20 mx-auto rounded-3xl bg-[#0e0e10] border border-[#262626] flex items-center justify-center text-white shadow-2xl">
+                <div className="w-20 h-20 mx-auto rounded-3xl bg-[#212121] flex items-center justify-center text-white shadow-2xl">
                   <LockOutlinedIcon sx={{ fontSize: 40 }} />
                 </div>
                 <div className="space-y-2">
@@ -1050,7 +1050,7 @@ export default function HomePage() {
                 {/* Empty State */}
                 {pinnedNotes.length === 0 && otherNotes.length === 0 && !loadingNotes && !loadingPrivateNotes && (
                   <div className="text-center py-16 space-y-3">
-                    <div className="w-16 h-16 mx-auto rounded-3xl bg-[#0e0e10] border border-[#262626] flex items-center justify-center text-neutral-400">
+                    <div className="w-16 h-16 mx-auto rounded-3xl bg-[#212121] flex items-center justify-center text-neutral-400">
                       {activeTab === "private" ? (
                         <LockOutlinedIcon sx={{ fontSize: 32 }} className="text-white" />
                       ) : (
@@ -1102,7 +1102,7 @@ export default function HomePage() {
                   </div>
                 ) : (
                   <div className="text-center py-16 space-y-3">
-                    <div className="w-16 h-16 mx-auto rounded-3xl bg-[#0e0e10] border border-[#262626] flex items-center justify-center text-neutral-400">
+                    <div className="w-16 h-16 mx-auto rounded-3xl bg-[#212121] flex items-center justify-center text-neutral-400">
                       <ArchiveOutlinedIcon sx={{ fontSize: 32 }} />
                     </div>
                     <Typography variant="h6" className="text-sm font-semibold text-white">
@@ -1149,7 +1149,7 @@ export default function HomePage() {
                   </div>
                 ) : (
                   <div className="text-center py-16 space-y-3">
-                    <div className="w-16 h-16 mx-auto rounded-3xl bg-[#0e0e10] border border-[#262626] flex items-center justify-center text-neutral-400">
+                    <div className="w-16 h-16 mx-auto rounded-3xl bg-[#212121] flex items-center justify-center text-neutral-400">
                       <DeleteOutlinedIcon sx={{ fontSize: 32 }} />
                     </div>
                     <Typography variant="h6" className="text-sm font-semibold text-white">

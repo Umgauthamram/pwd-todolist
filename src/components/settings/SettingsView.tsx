@@ -255,10 +255,10 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
                 key={sec.id}
                 type="button"
                 onClick={() => setActiveSection(sec.id)}
-                className="w-full p-4 sm:p-5 rounded-2xl bg-[#0e0e10] hover:bg-neutral-900 border border-[#262626] hover:border-neutral-500 transition-all flex items-center justify-between gap-4 text-left cursor-pointer group shadow-sm"
+                className="w-full p-4 sm:p-5 rounded-2xl bg-[#212121] hover:bg-[#282828] transition-all flex items-center justify-between gap-4 text-left cursor-pointer group shadow-sm"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-black border border-[#262626] flex items-center justify-center text-white shrink-0 group-hover:border-neutral-500 transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center text-white shrink-0 transition-colors">
                     {sec.icon}
                   </div>
                   <div className="min-w-0">
@@ -305,9 +305,9 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           </div>
 
           {/* Section Screen Container */}
-          <div className="rounded-2xl bg-[#0e0e10] border border-[#262626] p-6 sm:p-8 space-y-6 shadow-xl">
+          <div className="rounded-2xl bg-[#212121] p-6 sm:p-8 space-y-6 shadow-xl">
             <div className="flex items-center gap-3.5 pb-4 border-b border-[#1f1f22]">
-              <div className="w-11 h-11 rounded-xl bg-black border border-[#262626] flex items-center justify-center text-white">
+              <div className="w-11 h-11 rounded-xl bg-black flex items-center justify-center text-white">
                 <PersonIcon />
               </div>
               <div>
@@ -407,10 +407,10 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           </div>
 
           {/* Section Screen Container */}
-          <div className="rounded-2xl bg-[#0e0e10] border border-[#262626] p-6 sm:p-8 space-y-6 shadow-xl">
+          <div className="rounded-2xl bg-[#212121] p-6 sm:p-8 space-y-6 shadow-xl">
             <div className="flex items-center justify-between pb-4 border-b border-[#1f1f22]">
               <div className="flex items-center gap-3.5">
-                <div className="w-11 h-11 rounded-xl bg-black border border-[#262626] flex items-center justify-center text-white">
+                <div className="w-11 h-11 rounded-xl bg-black flex items-center justify-center text-white">
                   <LockOutlinedIcon />
                 </div>
                 <div>
@@ -520,9 +520,9 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           </div>
 
           {/* Section Screen Container */}
-          <div className="rounded-2xl bg-[#0e0e10] border border-[#262626] p-6 sm:p-8 space-y-6 shadow-xl">
+          <div className="rounded-2xl bg-[#212121] p-6 sm:p-8 space-y-6 shadow-xl">
             <div className="flex items-center gap-3.5 pb-4 border-b border-[#1f1f22]">
-              <div className="w-11 h-11 rounded-xl bg-black border border-[#262626] flex items-center justify-center text-white">
+              <div className="w-11 h-11 rounded-xl bg-black flex items-center justify-center text-white">
                 <VpnKeyIcon />
               </div>
               <div>
@@ -636,7 +636,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           </div>
 
           {/* Section Screen Container */}
-          <div className="rounded-2xl bg-[#0e0e10] border border-[#262626] p-6 sm:p-8 space-y-6 shadow-xl">
+          <div className="rounded-2xl bg-[#212121] p-6 sm:p-8 space-y-6 shadow-xl">
             <div className="flex items-center justify-between pb-4 border-b border-[#1f1f22]">
               <div className="flex items-center gap-3.5">
                 <div className="w-11 h-11 rounded-xl bg-black border border-[#262626] flex items-center justify-center text-white">

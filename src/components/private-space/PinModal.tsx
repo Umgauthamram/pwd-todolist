@@ -270,10 +270,10 @@ export default function PinModal({
       slotProps={{
         paper: {
           sx: {
-            backgroundColor: "#0e0e10",
+            backgroundColor: "#212121",
             color: "#ffffff",
             borderRadius: "24px",
-            border: "1px solid #262626",
+            border: "none",
             backgroundImage: "none",
             overflow: "hidden",
             boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.9)",
@@ -372,7 +372,7 @@ export default function PinModal({
               type="button"
               disabled={loading}
               onClick={() => handleKeypadPress(num)}
-              className="h-12 rounded-xl bg-[#171717] hover:bg-neutral-800 border border-[#262626] text-base font-semibold text-white transition-transform active:scale-95 flex items-center justify-center cursor-pointer"
+              className="h-12 rounded-xl bg-[#000000] hover:bg-[#1a1a1a] text-base font-semibold text-white transition-transform active:scale-95 flex items-center justify-center cursor-pointer"
             >
               {num}
             </button>
@@ -381,7 +381,7 @@ export default function PinModal({
             type="button"
             disabled={loading}
             onClick={() => setActiveDigits(["", "", "", ""])}
-            className="h-12 rounded-xl bg-[#171717] hover:bg-neutral-800 border border-[#262626] text-xs font-medium text-neutral-400 hover:text-white transition-transform active:scale-95 flex items-center justify-center cursor-pointer"
+            className="h-12 rounded-xl bg-[#000000] hover:bg-[#1a1a1a] text-xs font-medium text-neutral-400 hover:text-white transition-transform active:scale-95 flex items-center justify-center cursor-pointer"
           >
             Clear
           </button>
@@ -389,7 +389,7 @@ export default function PinModal({
             type="button"
             disabled={loading}
             onClick={() => handleKeypadPress("0")}
-            className="h-12 rounded-xl bg-[#171717] hover:bg-neutral-800 border border-[#262626] text-base font-semibold text-white transition-transform active:scale-95 flex items-center justify-center cursor-pointer"
+            className="h-12 rounded-xl bg-[#000000] hover:bg-[#1a1a1a] text-base font-semibold text-white transition-transform active:scale-95 flex items-center justify-center cursor-pointer"
           >
             0
           </button>
@@ -397,7 +397,7 @@ export default function PinModal({
             type="button"
             disabled={loading}
             onClick={handleKeypadBackspace}
-            className="h-12 rounded-xl bg-[#171717] hover:bg-neutral-800 border border-[#262626] text-base font-medium text-neutral-400 hover:text-white transition-transform active:scale-95 flex items-center justify-center cursor-pointer"
+            className="h-12 rounded-xl bg-[#000000] hover:bg-[#1a1a1a] text-base font-medium text-neutral-400 hover:text-white transition-transform active:scale-95 flex items-center justify-center cursor-pointer"
           >
             <BackspaceOutlinedIcon fontSize="small" />
           </button>
