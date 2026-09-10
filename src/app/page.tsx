@@ -23,6 +23,7 @@ import {
   LabelOutlined as LabelOutlinedIcon,
   DeleteForever as DeleteForeverIcon,
   RestoreFromTrash as RestoreFromTrashIcon,
+  Menu as MenuIcon,
 } from "@mui/icons-material";
 import { useAuth } from "@/context/AuthContext";
 import AuthScreen from "@/components/auth/AuthScreen";
@@ -49,6 +50,7 @@ export default function HomePage() {
 
   const [activeTab, setActiveTab] = useState<NavItem>("notes");
   const [isGridView, setIsGridView] = useState<boolean>(true);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState<boolean>(false);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
 
@@ -415,8 +417,19 @@ export default function HomePage() {
     <Box className="min-h-screen bg-black text-white flex flex-col selection:bg-white selection:text-black">
       {/* Top Header Bar: Section Indicator, Search Icon Button, View Mode Toggle, Profile/Settings Button */}
       <header className="sticky top-0 z-40 h-16 border-b border-[#262626] bg-black/95 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between gap-3">
-        {/* Left: Active Section Title */}
-        <div className="flex items-center gap-2 min-w-0">
+        {/* Left: Sidebar Toggle Button (Desktop) & Active Section Title */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <Tooltip title={isSidebarExpanded ? "Collapse sidebar" : "Expand sidebar"}>
+            <IconButton
+              onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
+              className="hidden md:flex text-neutral-400 hover:text-white hover:bg-neutral-900 border border-transparent hover:border-[#262626]"
+              size="small"
+              aria-label="Toggle sidebar"
+            >
+              <MenuIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+
           <span className="text-sm sm:text-base font-bold text-white tracking-tight">
             {activeTab === "notes"
               ? "Notes"
@@ -551,92 +564,131 @@ export default function HomePage() {
 
       {/* Main Workspace: Desktop Sidebar (Windows / Mac) + Main Body */}
       <div className="flex-1 flex flex-row min-h-[calc(100vh-64px)] overflow-hidden">
-        {/* Desktop Sidebar (Visible on Windows, Mac, desktop screens >= md) */}
+        {/* Desktop Sidebar (Shrinked by default w-16, expandable to w-56) */}
         <aside
           aria-label="Desktop Sidebar"
-          className="hidden md:flex flex-col w-60 lg:w-64 shrink-0 border-r border-[#262626] bg-black p-3 space-y-6 sticky top-16 h-[calc(100vh-64px)] overflow-y-auto no-scrollbar"
+          className={`hidden md:flex flex-col shrink-0 border-r border-[#262626] bg-black py-3 space-y-4 sticky top-16 h-[calc(100vh-64px)] overflow-y-auto no-scrollbar transition-all duration-200 ease-in-out ${
+            isSidebarExpanded ? "w-56 px-3" : "w-16 items-center px-1.5"
+          }`}
         >
           {/* Main Navigation items */}
-          <div className="space-y-1">
+          <div className="space-y-1.5 w-full">
             {navItems.map((item) => {
               const isActive = activeTab === item.id && !selectedLabel;
               return (
-                <button
+                <Tooltip
                   key={item.id}
-                  onClick={() => handleNavClick(item.id)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                    isActive
-                      ? "bg-white text-black font-semibold shadow-sm"
-                      : "text-neutral-400 hover:text-white hover:bg-neutral-900/80"
-                  }`}
+                  title={!isSidebarExpanded ? `${item.label}${item.count ? ` (${item.count})` : ""}` : ""}
+                  placement="right"
+                  enterDelay={300}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className={isActive ? "text-black" : "text-neutral-400"}>
-                      {item.icon}
-                    </span>
-                    <span className="truncate">{item.label}</span>
-                  </div>
+                  <button
+                    onClick={() => handleNavClick(item.id)}
+                    aria-label={item.label}
+                    className={`relative w-full flex items-center transition-all cursor-pointer ${
+                      isSidebarExpanded
+                        ? "justify-between px-3 py-2.5 rounded-xl text-xs font-medium"
+                        : "justify-center w-11 h-11 mx-auto rounded-xl"
+                    } ${
+                      isActive
+                        ? "bg-white text-black font-semibold shadow-sm"
+                        : "text-neutral-400 hover:text-white hover:bg-neutral-900/80"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className={isActive ? "text-black" : "text-neutral-400"}>
+                        {item.icon}
+                      </span>
+                      {isSidebarExpanded && <span className="truncate">{item.label}</span>}
+                    </div>
 
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    {item.badge && (
-                      <span
-                        className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
-                          isActive
-                            ? "bg-black text-white"
-                            : "bg-neutral-900 text-neutral-300 border border-[#262626]"
-                        }`}
-                      >
-                        {item.badge}
-                      </span>
+                    {/* In expanded mode: badge and count */}
+                    {isSidebarExpanded && (
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {item.badge && (
+                          <span
+                            className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
+                              isActive
+                                ? "bg-black text-white"
+                                : "bg-neutral-900 text-neutral-300 border border-[#262626]"
+                            }`}
+                          >
+                            {item.badge}
+                          </span>
+                        )}
+                        {item.count !== undefined && item.count > 0 && (
+                          <span
+                            className={`text-xs font-mono font-medium ${
+                              isActive ? "text-neutral-800 font-bold" : "text-neutral-500"
+                            }`}
+                          >
+                            {item.count}
+                          </span>
+                        )}
+                      </div>
                     )}
-                    {item.count !== undefined && item.count > 0 && (
+
+                    {/* In shrinked mode: badge indicator dot if count > 0 */}
+                    {!isSidebarExpanded && item.count !== undefined && item.count > 0 && (
                       <span
-                        className={`text-xs font-mono font-medium ${
-                          isActive ? "text-neutral-800 font-bold" : "text-neutral-500"
+                        className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${
+                          isActive ? "bg-black" : "bg-white"
                         }`}
-                      >
-                        {item.count}
-                      </span>
+                      />
                     )}
-                  </div>
-                </button>
+                  </button>
+                </Tooltip>
               );
             })}
           </div>
 
           {/* Labels section in desktop sidebar */}
           {allLabels.length > 0 && (
-            <div className="space-y-2 pt-2 border-t border-[#1f1f22]">
-              <div className="px-3 flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-neutral-500">
-                <span>Labels</span>
-                {selectedLabel && (
-                  <button
-                    onClick={() => setSelectedLabel(null)}
-                    className="text-[10px] text-neutral-400 hover:text-white normal-case font-sans underline cursor-pointer"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-              <div className="space-y-1">
+            <div className={`pt-2 border-t border-[#1f1f22] w-full ${isSidebarExpanded ? "space-y-2" : "space-y-1.5"}`}>
+              {isSidebarExpanded && (
+                <div className="px-2 flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-neutral-500">
+                  <span>Labels</span>
+                  {selectedLabel && (
+                    <button
+                      onClick={() => setSelectedLabel(null)}
+                      className="text-[10px] text-neutral-400 hover:text-white normal-case font-sans underline cursor-pointer"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-1 w-full">
                 {allLabels.map((lbl) => {
                   const isLabelActive = selectedLabel === lbl;
                   return (
-                    <button
+                    <Tooltip
                       key={lbl}
-                      onClick={() => setSelectedLabel(isLabelActive ? null : lbl)}
-                      className={`w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer truncate ${
-                        isLabelActive
-                          ? "bg-white text-black font-semibold"
-                          : "text-neutral-400 hover:text-white hover:bg-neutral-900/80"
-                      }`}
+                      title={!isSidebarExpanded ? `#${lbl}` : ""}
+                      placement="right"
+                      enterDelay={300}
                     >
-                      <LabelOutlinedIcon
-                        sx={{ fontSize: 15 }}
-                        className={isLabelActive ? "text-black" : "text-neutral-500"}
-                      />
-                      <span className="truncate">#{lbl}</span>
-                    </button>
+                      <button
+                        onClick={() => setSelectedLabel(isLabelActive ? null : lbl)}
+                        aria-label={`Tag #${lbl}`}
+                        className={`w-full flex items-center transition-all cursor-pointer ${
+                          isSidebarExpanded
+                            ? "gap-2.5 px-3 py-2 rounded-xl text-xs font-medium truncate"
+                            : "justify-center w-11 h-11 mx-auto rounded-xl"
+                        } ${
+                          isLabelActive
+                            ? "bg-white text-black font-semibold shadow-sm"
+                            : "text-neutral-400 hover:text-white hover:bg-neutral-900/80"
+                        }`}
+                      >
+                        <LabelOutlinedIcon
+                          sx={{ fontSize: 16 }}
+                          className={isLabelActive ? "text-black" : "text-neutral-500"}
+                        />
+                        {isSidebarExpanded && <span className="truncate">#{lbl}</span>}
+                      </button>
+                    </Tooltip>
                   );
                 })}
               </div>
