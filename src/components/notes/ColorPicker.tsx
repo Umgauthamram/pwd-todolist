@@ -125,6 +125,9 @@ export default function ColorPicker({
           })}
         </div>
       )}
+
+      {/* Keep module factory available for any stale cached client chunks */}
+      {false && <Menu open={false} />}
     </div>
   );
 }

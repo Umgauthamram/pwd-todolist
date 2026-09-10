@@ -34,8 +34,35 @@ export default function PwaRegistrar() {
   const [updateAvailable, setUpdateAvailable] = useState<boolean>(false);
 
   useEffect(() => {
-    // 1. Register Service Worker with Automatic Update Handling
+    // 1. Service Worker Handling
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      const isLocalhost =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
+
+      // During development on localhost, unregister any active service worker and purge caches
+      // to prevent stale chunk module factory errors
+      if (process.env.NODE_ENV === "development" || isLocalhost) {
+        navigator.serviceWorker.getRegistrations().then(async (registrations) => {
+          let hasActive = false;
+          for (const reg of registrations) {
+            await reg.unregister();
+            hasActive = true;
+          }
+          if ("caches" in window) {
+            const keys = await caches.keys();
+            for (const key of keys) {
+              await caches.delete(key);
+            }
+          }
+          if (hasActive) {
+            console.log("[PWA] Unregistered stale development ServiceWorker & cleared caches");
+            window.location.reload();
+          }
+        });
+        return;
+      }
+
       let refreshing = false;
 
       // When the new Service Worker takes control, reload page seamlessly
