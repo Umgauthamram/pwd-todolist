@@ -51,31 +51,35 @@ export default function ColorPicker({ currentColor, onChangeColor, size = "small
         slotProps={{
           paper: {
             sx: {
-              backgroundColor: "#0e0e10",
-              border: "1px solid #262626",
-              borderRadius: "14px",
-              padding: "6px",
-              boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.8)",
+              backgroundColor: "#212121",
+              border: "none",
+              borderRadius: "16px",
+              padding: "8px",
+              boxShadow: "0 14px 35px -5px rgba(0, 0, 0, 0.9)",
             },
           },
         }}
       >
-        <div className="grid grid-cols-5 gap-1.5 p-1" onClick={(e) => e.stopPropagation()}>
+        <div className="grid grid-cols-6 gap-2 p-1" onClick={(e) => e.stopPropagation()}>
           {NOTE_COLORS.map((c: NoteColor) => {
             const isSelected = currentColor.toLowerCase() === c.bg.toLowerCase();
             return (
-              <button
-                key={c.id}
-                type="button"
-                onClick={(e) => handleSelect(c.bg, e)}
-                title={c.name}
-                style={{ backgroundColor: c.bg, borderColor: c.border }}
-                className={`w-7 h-7 rounded-full border transition-transform flex items-center justify-center cursor-pointer hover:scale-115 ${
-                  isSelected ? "ring-2 ring-white scale-105" : ""
-                }`}
-              >
-                {isSelected && <CheckIcon sx={{ fontSize: 14, color: "#ffffff" }} />}
-              </button>
+              <Tooltip key={c.id} title={c.name} arrow placement="top">
+                <button
+                  type="button"
+                  onClick={(e) => handleSelect(c.bg, e)}
+                  aria-label={c.name}
+                  style={{
+                    backgroundColor: c.accent || c.bg,
+                    border: c.border || "none",
+                  }}
+                  className={`w-7 h-7 rounded-full transition-all flex items-center justify-center cursor-pointer hover:scale-115 active:scale-95 shadow-sm ${
+                    isSelected ? "ring-2 ring-white scale-105" : "hover:opacity-90"
+                  }`}
+                >
+                  {isSelected && <CheckIcon sx={{ fontSize: 13, color: "#ffffff" }} />}
+                </button>
+              </Tooltip>
             );
           })}
         </div>

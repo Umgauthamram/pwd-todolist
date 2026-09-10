@@ -108,7 +108,7 @@ export default function NoteModal({
   };
 
   const activeColorObj = NOTE_COLORS.find(
-    (c) => c.bg.toLowerCase() === color.toLowerCase()
+    (c) => c.bg.toLowerCase() === (color || "").toLowerCase()
   );
   const activeBorder = activeColorObj?.border || "#262626";
 
@@ -133,6 +133,14 @@ export default function NoteModal({
         },
       }}
     >
+      {/* Top Rainbow Accent Strip */}
+      {activeColorObj?.accent && activeColorObj.id !== "default" && activeColorObj.id !== "black" && (
+        <div
+          className="h-1.5 w-full shrink-0"
+          style={{ backgroundColor: activeColorObj.accent }}
+        />
+      )}
+
       <div className="p-5 sm:p-6 space-y-4">
         {/* Title Input & Pin Toggle */}
         <div className="flex items-center justify-between gap-2">

@@ -111,7 +111,7 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
   };
 
   // Find border color matching selected card background
-  const activeColorObj = NOTE_COLORS.find((c) => c.bg.toLowerCase() === color.toLowerCase());
+  const activeColorObj = NOTE_COLORS.find((c) => c.bg.toLowerCase() === (color || "").toLowerCase());
   const activeBorder = activeColorObj?.border || "#262626";
 
   if (!isExpanded) {
@@ -143,14 +143,21 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
       </div>
     );
   }
-
   return (
     <div className="w-full max-w-2xl mx-auto">
       <div
         ref={containerRef}
         style={{ backgroundColor: color && color !== "#0e0e10" && color !== "#202124" ? color : "#212121" }}
-        className="rounded-2xl p-4 shadow-2xl transition-colors space-y-3"
+        className="rounded-2xl p-4 shadow-2xl transition-colors space-y-3 relative overflow-hidden"
       >
+        {/* Top Rainbow Accent Strip */}
+        {activeColorObj?.accent && activeColorObj.id !== "default" && activeColorObj.id !== "black" && (
+          <div
+            className="absolute top-0 left-0 right-0 h-1 opacity-90"
+            style={{ backgroundColor: activeColorObj.accent }}
+          />
+        )}
+
         {/* Title Input & Pin Button */}
         <div className="flex items-center justify-between">
           <input

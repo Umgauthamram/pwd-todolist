@@ -58,12 +58,21 @@ export default function NoteCard({
 }: NoteCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
-  const noteBg =
-    note.color && note.color !== "#0e0e10" && note.color !== "#202124"
-      ? note.color
-      : isHovered
-      ? "#2b2b2b"
-      : "#212121";
+  const activeColorObj = NOTE_COLORS.find(
+    (c) => c.bg.toLowerCase() === (note.color || "").toLowerCase()
+  );
+
+  const hasCustomColor =
+    Boolean(note.color) &&
+    note.color !== "#0e0e10" &&
+    note.color !== "#202124" &&
+    note.color !== "#212121";
+
+  const noteBg = hasCustomColor
+    ? note.color
+    : isHovered
+    ? "#282828"
+    : "#212121";
 
   return (
     <div
@@ -73,12 +82,20 @@ export default function NoteCard({
       style={{
         backgroundColor: noteBg,
       }}
-      className={`group relative rounded-2xl transition-all duration-200 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-between ${
+      className={`group relative rounded-2xl transition-all duration-200 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-between overflow-hidden ${
         viewMode === "list"
           ? "p-4 sm:p-5 w-full max-w-2xl mx-auto"
           : "p-3 sm:p-4 w-full h-fit"
       }`}
     >
+      {/* Top Rainbow Accent Strip if custom rainbow color is active */}
+      {activeColorObj?.accent && activeColorObj.id !== "default" && activeColorObj.id !== "black" && (
+        <div
+          className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl opacity-90"
+          style={{ backgroundColor: activeColorObj.accent }}
+        />
+      )}
+
       {/* Top Row: Title & Pin Button */}
       <div className="space-y-1.5 sm:space-y-2">
         <div className="flex items-start justify-between gap-1.5 sm:gap-2">
