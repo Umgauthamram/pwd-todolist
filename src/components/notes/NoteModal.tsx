@@ -43,17 +43,37 @@ export default function NoteModal({
   const [labels, setLabels] = useState<string[]>([]);
   const [newLabelInput, setNewLabelInput] = useState("");
   const [showLabelInput, setShowLabelInput] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [savedBaseline, setSavedBaseline] = useState<{
+    title: string;
+    content: string;
+    color: string;
+    isPinned: boolean;
+    isArchived: boolean;
+    labels: string[];
+  } | null>(null);
 
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (note) {
-      setTitle(note.title || "");
-      setContent(note.content || "");
-      setColor(note.color || "#0e0e10");
-      setIsPinned(Boolean(note.isPinned));
-      setIsArchived(Boolean(note.isArchived));
-      setLabels(note.labels || []);
+      const initialColor = note.color || "#212121";
+      const baseline = {
+        title: note.title || "",
+        content: note.content || "",
+        color: initialColor,
+        isPinned: Boolean(note.isPinned),
+        isArchived: Boolean(note.isArchived),
+        labels: note.labels || [],
+      };
+      setTitle(baseline.title);
+      setContent(baseline.content);
+      setColor(baseline.color);
+      setIsPinned(baseline.isPinned);
+      setIsArchived(baseline.isArchived);
+      setLabels(baseline.labels);
+      setSavedBaseline(baseline);
       setShowLabelInput(false);
       setNewLabelInput("");
     }
@@ -69,15 +89,48 @@ export default function NoteModal({
 
   if (!note) return null;
 
-  const handleSaveAndClose = async () => {
-    if (
-      title !== note.title ||
-      content !== note.content ||
-      color !== note.color ||
-      isPinned !== note.isPinned ||
-      isArchived !== note.isArchived ||
-      JSON.stringify(labels) !== JSON.stringify(note.labels)
-    ) {
+  const hasChanges = savedBaseline
+    ? title !== savedBaseline.title ||
+      content !== savedBaseline.content ||
+      color !== savedBaseline.color ||
+      isPinned !== savedBaseline.isPinned ||
+      isArchived !== savedBaseline.isArchived ||
+      JSON.stringify(labels) !== JSON.stringify(savedBaseline.labels)
+    : false;
+
+  const handleSave = async () => {
+    if (isSaving || !note) return;
+    setIsSaving(true);
+    try {
+      await onUpdate({
+        _id: note._id,
+        title: title.trim(),
+        content: content.trim(),
+        color,
+        isPinned,
+        isArchived,
+        labels,
+      });
+      // Update baseline so hasChanges becomes false and button switches to "Close"
+      setSavedBaseline({
+        title: title.trim(),
+        content: content.trim(),
+        color,
+        isPinned,
+        isArchived,
+        labels,
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleClose = () => {
+    onClose();
+  };
+
+  const handleBackdropClose = async () => {
+    if (hasChanges && note) {
       await onUpdate({
         _id: note._id,
         title: title.trim(),
@@ -113,7 +166,7 @@ export default function NoteModal({
   return (
     <Dialog
       open={open}
-      onClose={handleSaveAndClose}
+      onClose={handleBackdropClose}
       maxWidth="sm"
       fullWidth
       slotProps={{
@@ -282,24 +335,47 @@ export default function NoteModal({
             </Tooltip>
           </div>
 
-          <Button
-            onClick={handleSaveAndClose}
-            sx={{
-              color: isLight ? activeColor.text : "#ffffff",
-              textTransform: "none",
-              fontWeight: 600,
-              fontSize: "13px",
-              padding: "4px 18px",
-              borderRadius: "8px",
-              "&:hover": {
-                backgroundColor: isLight
-                  ? "rgba(0, 0, 0, 0.05)"
-                  : "rgba(255, 255, 255, 0.08)",
-              },
-            }}
-          >
-            Close
-          </Button>
+          {hasChanges ? (
+            <Button
+              onClick={handleSave}
+              disabled={isSaving}
+              sx={{
+                backgroundColor: isLight ? activeColor.text : "#ffffff",
+                color: isLight ? "#ffffff" : "#000000",
+                textTransform: "none",
+                fontWeight: 600,
+                fontSize: "13px",
+                padding: "4px 20px",
+                borderRadius: "8px",
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.18)",
+                "&:hover": {
+                  backgroundColor: isLight ? activeColor.text : "#f0f0f0",
+                  opacity: 0.92,
+                },
+              }}
+            >
+              {isSaving ? "Saving..." : "Save"}
+            </Button>
+          ) : (
+            <Button
+              onClick={handleClose}
+              sx={{
+                color: isLight ? activeColor.text : "#ffffff",
+                textTransform: "none",
+                fontWeight: 600,
+                fontSize: "13px",
+                padding: "4px 18px",
+                borderRadius: "8px",
+                "&:hover": {
+                  backgroundColor: isLight
+                    ? "rgba(0, 0, 0, 0.05)"
+                    : "rgba(255, 255, 255, 0.08)",
+                },
+              }}
+            >
+              Close
+            </Button>
+          )}
         </div>
       </div>
     </Dialog>
