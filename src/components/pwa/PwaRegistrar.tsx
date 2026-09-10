@@ -226,15 +226,28 @@ export default function PwaRegistrar() {
 
   return (
     <>
-      {/* Update Available Notification Banner */}
+      {/* Update Available Notification Toast */}
       {updateAvailable && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl bg-white text-black font-semibold text-xs shadow-2xl flex items-center gap-3 border border-neutral-200 backdrop-blur-md animate-bounce">
-          <span>✨ App updated to latest version!</span>
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl bg-[#1e1e20] text-white text-xs font-medium shadow-2xl flex items-center gap-3 border border-neutral-700/80 backdrop-blur-xl transition-all duration-200">
+          <span className="flex items-center gap-1.5 font-semibold text-neutral-100 whitespace-nowrap">
+            <span>✨</span>
+            <span>New update is available!</span>
+          </span>
           <button
+            type="button"
             onClick={() => window.location.reload()}
-            className="px-2.5 py-1 rounded-lg bg-black text-white text-[11px] font-bold hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="px-3 py-1.5 rounded-xl bg-white text-black text-xs font-bold hover:bg-neutral-200 transition-colors cursor-pointer shadow-xs whitespace-nowrap"
           >
-            Refresh Now
+            Refresh
+          </button>
+          <button
+            type="button"
+            onClick={() => setUpdateAvailable(false)}
+            className="text-neutral-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer flex items-center justify-center shrink-0"
+            title="Dismiss"
+            aria-label="Dismiss update notification"
+          >
+            <CloseIcon sx={{ fontSize: 16 }} />
           </button>
         </div>
       )}
