@@ -35,16 +35,17 @@ export const db = new BeginningDatabase();
  */
 export async function cacheNotesLocally(notes: NoteItem[]): Promise<void> {
   try {
+    if (!notes || notes.length === 0) return;
     const records: OfflineNoteRecord[] = notes.map((n) => ({
       _id: n._id,
       userId: n.userId,
       title: n.title,
       content: n.content,
       color: n.color,
-      isPinned: n.isPinned,
-      isArchived: n.isArchived,
-      isTrashed: n.isTrashed,
-      isPrivate: n.isPrivate,
+      isPinned: Boolean(n.isPinned),
+      isArchived: Boolean(n.isArchived),
+      isTrashed: Boolean(n.isTrashed),
+      isPrivate: Boolean(n.isPrivate),
       labels: n.labels || [],
       updatedAt: n.updatedAt || new Date().toISOString(),
       syncStatus: "synced",
@@ -62,8 +63,10 @@ export async function cacheNotesLocally(notes: NoteItem[]): Promise<void> {
 export async function getCachedNotes(userId: string, isPrivate: boolean): Promise<OfflineNoteRecord[]> {
   try {
     return await db.notes
-      .where({ userId, isPrivate: isPrivate ? 1 : 0 })
-      .filter((n) => n.syncStatus !== "pending_delete")
+      .where("userId")
+      .equals(userId)
+      .filter((n) => Boolean(n.isPrivate) === Boolean(isPrivate) && n.syncStatus !== "pending_delete")
+      .reverse()
       .sortBy("updatedAt");
   } catch (error) {
     console.error("Dexie fetch error:", error);

@@ -31,6 +31,8 @@ import NoteCard, { NoteItem } from "@/components/notes/NoteCard";
 import NoteModal from "@/components/notes/NoteModal";
 import PinModal, { PinModalMode } from "@/components/private-space/PinModal";
 import SettingsView from "@/components/settings/SettingsView";
+import SearchScreen from "@/components/search/SearchScreen";
+import { cacheNotesLocally, getCachedNotes } from "@/lib/dexie";
 
 type NavItem = "notes" | "private" | "archive" | "trash" | "settings";
 
@@ -47,7 +49,7 @@ export default function HomePage() {
 
   const [activeTab, setActiveTab] = useState<NavItem>("notes");
   const [isGridView, setIsGridView] = useState<boolean>(true);
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
 
   // Pull down to reload state
@@ -71,7 +73,7 @@ export default function HomePage() {
   const [pinModalOpen, setPinModalOpen] = useState<boolean>(false);
   const [pinModalMode, setPinModalMode] = useState<PinModalMode>("enter");
 
-  // Fetch public workspace notes
+  // Fetch public workspace notes (with IndexedDB offline fallback)
   const fetchPublicNotes = useCallback(async () => {
     if (!user) return;
 
@@ -82,16 +84,27 @@ export default function HomePage() {
         const data = await res.json();
         if (data.notes) {
           setNotes(data.notes);
+          cacheNotesLocally(data.notes);
+          return;
         }
       }
+      // Offline fallback: load from local Dexie IndexedDB
+      const cached = await getCachedNotes(user.id, false);
+      if (cached && cached.length > 0) {
+        setNotes(cached as unknown as NoteItem[]);
+      }
     } catch (error) {
-      console.error("Failed to load public notes:", error);
+      console.warn("Network error loading notes; falling back to offline IndexedDB:", error);
+      const cached = await getCachedNotes(user.id, false);
+      if (cached && cached.length > 0) {
+        setNotes(cached as unknown as NoteItem[]);
+      }
     } finally {
       setLoadingNotes(false);
     }
   }, [user]);
 
-  // Fetch private workspace notes (gated by PIN session)
+  // Fetch private workspace notes (gated by PIN session, with IndexedDB offline fallback)
   const fetchPrivateNotes = useCallback(async () => {
     if (!user || !isPrivateUnlocked) {
       setPrivateNotes([]);
@@ -105,12 +118,23 @@ export default function HomePage() {
         const data = await res.json();
         if (data.notes) {
           setPrivateNotes(data.notes);
+          cacheNotesLocally(data.notes);
+          return;
         }
       } else if (res.status === 403) {
         setIsPrivateUnlocked(false);
+        return;
+      }
+      const cached = await getCachedNotes(user.id, true);
+      if (cached && cached.length > 0) {
+        setPrivateNotes(cached as unknown as NoteItem[]);
       }
     } catch (error) {
-      console.error("Failed to load private notes:", error);
+      console.warn("Network error loading private notes; falling back to offline IndexedDB:", error);
+      const cached = await getCachedNotes(user.id, true);
+      if (cached && cached.length > 0) {
+        setPrivateNotes(cached as unknown as NoteItem[]);
+      }
     } finally {
       setLoadingPrivateNotes(false);
     }
@@ -320,18 +344,8 @@ export default function HomePage() {
       result = result.filter((n) => n.labels?.includes(selectedLabel));
     }
 
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (n) =>
-          n.title?.toLowerCase().includes(q) ||
-          n.content?.toLowerCase().includes(q) ||
-          n.labels?.some((lbl) => lbl.toLowerCase().includes(q))
-      );
-    }
-
     return result;
-  }, [currentDataset, activeTab, selectedLabel, searchQuery]);
+  }, [currentDataset, activeTab, selectedLabel]);
 
   const pinnedNotes = useMemo(
     () => filteredNotes.filter((n) => n.isPinned),
@@ -395,69 +409,91 @@ export default function HomePage() {
       icon: <DeleteOutlinedIcon fontSize="small" />,
       count: notes.filter((n) => n.isTrashed).length,
     },
-    {
-      id: "settings" as NavItem,
-      label: "Settings",
-      icon: <SettingsOutlinedIcon fontSize="small" />,
-    },
   ];
 
   return (
     <Box className="min-h-screen bg-black text-white flex flex-col selection:bg-white selection:text-black">
-      {/* Top Navbar (without app name, without reload button) */}
-      <header className="sticky top-0 z-40 h-16 border-b border-[#262626] bg-black/95 backdrop-blur-md px-4 flex items-center justify-between gap-3">
-        {/* Search Bar */}
-        <div className="flex-1 max-w-2xl">
-          <div className="flex items-center w-full bg-[#0e0e10] border border-[#262626] hover:border-neutral-500 focus-within:border-white rounded-xl px-3 py-1.5 transition-all">
-            <SearchIcon className="text-neutral-400 mr-2" fontSize="small" />
-            <InputBase
-              placeholder={
-                activeTab === "private"
-                  ? "Search private notes..."
-                  : "Search notes, content, or #labels..."
-              }
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full text-sm text-white placeholder-neutral-500"
-              inputProps={{ "aria-label": "search notes" }}
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="text-xs text-neutral-400 hover:text-white px-1.5"
-              >
-                Clear
-              </button>
-            )}
-          </div>
+      {/* Top Header Bar: Section Indicator, Search Icon Button, View Mode Toggle, Profile/Settings Button */}
+      <header className="sticky top-0 z-40 h-16 border-b border-[#262626] bg-black/95 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between gap-3">
+        {/* Left: Active Section Title */}
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-sm sm:text-base font-bold text-white tracking-tight">
+            {activeTab === "notes"
+              ? "Notes"
+              : activeTab === "private"
+              ? "Private Space"
+              : activeTab === "archive"
+              ? "Archive"
+              : activeTab === "trash"
+              ? "Trash"
+              : "Settings"}
+          </span>
+          {selectedLabel && (
+            <span className="text-xs font-mono text-neutral-400 bg-neutral-900 border border-[#262626] px-2 py-0.5 rounded-full truncate">
+              #{selectedLabel}
+            </span>
+          )}
         </div>
 
-        {/* Action Controls & Authentication Profile */}
-        <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+        {/* Right: Search Icon, Grid/List Toggle, and Profile/Settings Button */}
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          {/* Search Icon Button: Opens Dedicated Search Screen */}
+          <Tooltip title="Search notes">
+            <IconButton
+              onClick={() => setIsSearchOpen(true)}
+              className="text-neutral-400 hover:text-white hover:bg-neutral-900 border border-transparent hover:border-[#262626]"
+              size="small"
+              aria-label="Search notes"
+            >
+              <SearchIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+
+          {/* Grid / List View Toggle */}
           <Tooltip title={isGridView ? "Switch to list view" : "Switch to grid view"}>
             <IconButton
               onClick={() => setIsGridView(!isGridView)}
-              className="text-neutral-400 hover:text-white hover:bg-neutral-900"
+              className="text-neutral-400 hover:text-white hover:bg-neutral-900 border border-transparent hover:border-[#262626]"
               size="small"
+              aria-label="Toggle view layout"
             >
               {isGridView ? <ViewStreamIcon fontSize="small" /> : <GridViewIcon fontSize="small" />}
             </IconButton>
           </Tooltip>
 
-          {/* User Profile (Clicking opens Settings - Logout is inside Settings) */}
-          <div className="flex items-center gap-2 pl-2 border-l border-[#262626]">
-            <Tooltip title={`Signed in as ${user.email} (Open Settings)`}>
+          {/* User Profile Button: Navigates to Settings Page */}
+          <div className="flex items-center pl-1.5 sm:pl-2 border-l border-[#262626]">
+            <Tooltip
+              title={
+                activeTab === "settings"
+                  ? "Settings (Active)"
+                  : `Signed in as ${user.email} (Open Settings)`
+              }
+            >
               <button
                 type="button"
                 onClick={() => setActiveTab("settings")}
-                className="flex items-center gap-2 cursor-pointer bg-[#0e0e10] hover:bg-neutral-900 border border-[#262626] hover:border-neutral-500 px-2.5 py-1 rounded-full transition-all"
+                className={`flex items-center gap-2 cursor-pointer px-2.5 py-1 rounded-full transition-all border ${
+                  activeTab === "settings"
+                    ? "bg-white text-black border-white font-semibold shadow-sm"
+                    : "bg-[#0e0e10] hover:bg-neutral-900 text-white border-[#262626] hover:border-neutral-500"
+                }`}
+                aria-label="Settings and Profile"
               >
-                <div className="w-6 h-6 rounded-full bg-white text-black font-bold text-xs flex items-center justify-center">
+                <div
+                  className={`w-6 h-6 rounded-full font-bold text-xs flex items-center justify-center shrink-0 ${
+                    activeTab === "settings" ? "bg-black text-white" : "bg-white text-black"
+                  }`}
+                >
                   {user.email.charAt(0).toUpperCase()}
                 </div>
-                <span className="text-xs font-medium text-white hidden sm:inline max-w-[120px] truncate">
+                <span className="text-xs font-medium hidden sm:inline max-w-[120px] truncate">
                   {user.email.split("@")[0]}
                 </span>
+                <SettingsOutlinedIcon
+                  sx={{ fontSize: 15 }}
+                  className={activeTab === "settings" ? "text-black" : "text-neutral-400"}
+                />
               </button>
             </Tooltip>
           </div>
@@ -940,6 +976,26 @@ export default function HomePage() {
           fetchPrivateNotes();
         }}
       />
+
+      {/* Dedicated Search Screen (Opens on Search Icon Click, Real-time Results) */}
+      <SearchScreen
+        open={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        notes={notes}
+        privateNotes={privateNotes}
+        isPrivateUnlocked={isPrivateUnlocked}
+        isGridView={isGridView}
+        setIsGridView={setIsGridView}
+        onEdit={setEditingNote}
+        onTogglePin={handleTogglePin}
+        onChangeColor={handleChangeColor}
+        onToggleArchive={handleToggleArchive}
+        onMoveToTrash={handleMoveToTrash}
+        onRestoreFromTrash={handleRestoreFromTrash}
+        onDeletePermanently={handleDeletePermanently}
+        allLabels={allLabels}
+      />
     </Box>
   );
 }
+

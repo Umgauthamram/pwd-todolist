@@ -32,8 +32,22 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const USER_STORAGE_KEY = "beginning_cached_user";
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  // Initialize user from localStorage to allow instantaneous offline loading
+  const [user, setUser] = useState<UserProfile | null>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(USER_STORAGE_KEY);
+        if (stored) {
+          return JSON.parse(stored);
+        }
+      } catch {}
+    }
+    return null;
+  });
+
   const [loading, setLoading] = useState<boolean>(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
@@ -47,7 +61,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = await res.json();
         setIsPrivateUnlocked(Boolean(data.isUnlocked));
         if (data.hasPin !== undefined) {
-          setUser((prev) => (prev ? { ...prev, hasPin: Boolean(data.hasPin) } : prev));
+          setUser((prev) => {
+            if (!prev) return prev;
+            const updated = { ...prev, hasPin: Boolean(data.hasPin) };
+            try {
+              localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updated));
+            } catch {}
+            return updated;
+          });
         }
       } else {
         setIsPrivateUnlocked(false);
@@ -64,14 +85,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = await res.json();
         if (data.authenticated && data.user) {
           setUser(data.user);
+          try {
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
+          } catch {}
           await checkPrivateStatus();
           return;
         }
       }
-      setUser(null);
-      setIsPrivateUnlocked(false);
+
+      // Explicitly unauthenticated by server
+      if (res.status === 401) {
+        try {
+          localStorage.removeItem(USER_STORAGE_KEY);
+        } catch {}
+        setUser(null);
+        setIsPrivateUnlocked(false);
+      }
     } catch (err) {
-      console.error("Failed to fetch session:", err);
+      console.warn("Failed to fetch online session (retaining offline session if available):", err);
+      // Offline fallback: load from localStorage
+      try {
+        const stored = localStorage.getItem(USER_STORAGE_KEY);
+        if (stored) {
+          setUser(JSON.parse(stored));
+          return;
+        }
+      } catch {}
       setUser(null);
       setIsPrivateUnlocked(false);
     } finally {
@@ -96,20 +135,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const lockPrivateSpace = async () => {
     try {
       await fetch("/api/private-space/lock", { method: "POST" });
-      setIsPrivateUnlocked(false);
     } catch (err) {
       console.error("Lock error:", err);
+    } finally {
+      setIsPrivateUnlocked(false);
     }
   };
 
   const logout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      try {
+        localStorage.removeItem(USER_STORAGE_KEY);
+      } catch {}
       setUser(null);
       setIsPrivateUnlocked(false);
       window.location.reload();
-    } catch (err) {
-      console.error("Logout error:", err);
     }
   };
 
