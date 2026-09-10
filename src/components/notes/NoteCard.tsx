@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import Chip from "@mui/material/Chip";
 import {
   PushPin as PushPinIcon,
   PushPinOutlined as PushPinOutlinedIcon,
@@ -14,21 +13,22 @@ import {
   DeleteForever as DeleteForeverIcon,
 } from "@mui/icons-material";
 import ColorPicker from "./ColorPicker";
-import { NOTE_COLORS } from "@/constants/colors";
+import { getNoteColor } from "@/constants/colors";
 
 export interface NoteItem {
+  id?: string;
   _id: string;
-  userId: string;
+  userId?: string;
   title: string;
   content: string;
-  color: string;
   isPinned: boolean;
   isArchived: boolean;
   isTrashed: boolean;
-  isPrivate: boolean;
+  isPrivate?: boolean;
+  color?: string;
   labels: string[];
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
 
 interface NoteCardProps {
@@ -37,7 +37,7 @@ interface NoteCardProps {
   isTrashView?: boolean;
   onEdit: (note: NoteItem) => void;
   onTogglePin: (note: NoteItem) => void;
-  onChangeColor: (note: NoteItem, newColor: string) => void;
+  onChangeColor: (note: NoteItem, color: string) => void;
   onToggleArchive: (note: NoteItem) => void;
   onMoveToTrash: (note: NoteItem) => void;
   onRestoreFromTrash: (note: NoteItem) => void;
@@ -57,22 +57,18 @@ export default function NoteCard({
   onDeletePermanently,
 }: NoteCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
 
-  const activeColorObj = NOTE_COLORS.find(
-    (c) => c.bg.toLowerCase() === (note.color || "").toLowerCase()
-  );
+  const activeColor = getNoteColor(note.color);
+  const isLight = Boolean(activeColor.isLight);
 
-  const hasCustomColor =
-    Boolean(note.color) &&
-    note.color !== "#0e0e10" &&
-    note.color !== "#202124" &&
-    note.color !== "#212121";
-
-  const noteBg = hasCustomColor
-    ? note.color
+  const noteBg = isLight
+    ? activeColor.bg
     : isHovered
-    ? "#282828"
-    : "#212121";
+    ? activeColor.id === "black"
+      ? "#141414"
+      : "#282828"
+    : activeColor.bg;
 
   return (
     <div
@@ -81,18 +77,21 @@ export default function NoteCard({
       onClick={() => onEdit(note)}
       style={{
         backgroundColor: noteBg,
+        border: activeColor.border || "none",
       }}
-      className={`group relative rounded-2xl transition-all duration-200 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-between overflow-hidden ${
+      className={`group relative rounded-2xl transition-all duration-200 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-between ${
+        isPickerOpen ? "z-40" : isHovered ? "z-20" : "z-0"
+      } ${
         viewMode === "list"
           ? "p-4 sm:p-5 w-full max-w-2xl mx-auto"
           : "p-3 sm:p-4 w-full h-fit"
       }`}
     >
-      {/* Top Rainbow Accent Strip if custom rainbow color is active */}
-      {activeColorObj?.accent && activeColorObj.id !== "default" && activeColorObj.id !== "black" && (
+      {/* Top Rainbow Accent Strip if custom color */}
+      {activeColor.accent && activeColor.id !== "default" && activeColor.id !== "black" && (
         <div
           className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl opacity-90"
-          style={{ backgroundColor: activeColorObj.accent }}
+          style={{ backgroundColor: activeColor.accent }}
         />
       )}
 
@@ -101,7 +100,10 @@ export default function NoteCard({
         <div className="flex items-start justify-between gap-1.5 sm:gap-2">
           {note.title ? (
             <h3
-              className={`font-semibold text-white break-words leading-snug ${
+              style={{
+                color: isLight ? activeColor.text : "#ffffff",
+              }}
+              className={`font-semibold break-words leading-snug ${
                 viewMode === "list"
                   ? "text-sm sm:text-base line-clamp-2"
                   : "text-xs sm:text-sm md:text-base line-clamp-2"
@@ -124,7 +126,14 @@ export default function NoteCard({
                 <IconButton
                   size="small"
                   onClick={() => onTogglePin(note)}
-                  className={note.isPinned ? "text-white" : "text-neutral-400 hover:text-white"}
+                  className={
+                    isLight
+                      ? "hover:opacity-80 transition-opacity"
+                      : note.isPinned
+                      ? "text-white"
+                      : "text-neutral-400 hover:text-white"
+                  }
+                  style={isLight ? { color: activeColor.text } : undefined}
                   sx={{ padding: "4px" }}
                 >
                   {note.isPinned ? (
@@ -141,7 +150,11 @@ export default function NoteCard({
         {/* Content Preview */}
         {note.content && (
           <p
-            className={`text-neutral-300 whitespace-pre-wrap break-words leading-relaxed ${
+            style={{
+              color: isLight ? activeColor.text : "#d4d4d4",
+              opacity: isLight ? 0.9 : 1,
+            }}
+            className={`whitespace-pre-wrap break-words leading-relaxed ${
               viewMode === "list"
                 ? "text-xs sm:text-sm line-clamp-10"
                 : "text-[11px] sm:text-xs md:text-sm line-clamp-5 sm:line-clamp-6"
@@ -157,7 +170,12 @@ export default function NoteCard({
             {note.labels.map((lbl) => (
               <span
                 key={lbl}
-                className="text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full bg-[#000000] text-neutral-300 font-medium"
+                style={{
+                  backgroundColor: isLight ? "#ffffff" : "#000000",
+                  color: isLight ? activeColor.text : "#d4d4d4",
+                  border: isLight ? `1px solid ${activeColor.text}40` : "none",
+                }}
+                className="text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full font-medium shadow-xs"
               >
                 #{lbl}
               </span>
@@ -169,8 +187,10 @@ export default function NoteCard({
       {/* Bottom Row: Actions Bar */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`mt-3 sm:mt-4 pt-2 border-t border-white/5 flex items-center justify-between text-xs text-neutral-400 transition-opacity duration-150 ${
-          isHovered ? "opacity-100" : "opacity-75 sm:opacity-0"
+        className={`mt-3 sm:mt-4 pt-2 border-t ${
+          isLight ? "border-black/10" : "border-white/5"
+        } flex items-center justify-between text-xs transition-opacity duration-150 ${
+          isHovered || isPickerOpen ? "opacity-100" : "opacity-75 sm:opacity-0"
         }`}
       >
         {isTrashView ? (
@@ -198,15 +218,22 @@ export default function NoteCard({
           <div className="flex items-center gap-1 w-full justify-between">
             <div className="flex items-center gap-0.5">
               <ColorPicker
-                currentColor={note.color}
+                currentColor={note.color || ""}
                 onChangeColor={(newCol) => onChangeColor(note, newCol)}
+                onOpenChange={setIsPickerOpen}
+                iconColor={isLight ? activeColor.text : undefined}
               />
 
               <Tooltip title={note.isArchived ? "Unarchive" : "Archive"}>
                 <IconButton
                   size="small"
                   onClick={() => onToggleArchive(note)}
-                  className="text-neutral-400 hover:text-white hover:bg-neutral-800"
+                  className={
+                    isLight
+                      ? "hover:opacity-80 transition-opacity"
+                      : "text-neutral-400 hover:text-white hover:bg-neutral-800"
+                  }
+                  style={isLight ? { color: activeColor.text } : undefined}
                 >
                   {note.isArchived ? (
                     <UnarchiveOutlinedIcon fontSize="small" />
@@ -220,7 +247,12 @@ export default function NoteCard({
                 <IconButton
                   size="small"
                   onClick={() => onMoveToTrash(note)}
-                  className="text-neutral-400 hover:text-red-400 hover:bg-red-500/10"
+                  className={
+                    isLight
+                      ? "hover:opacity-80 transition-opacity"
+                      : "text-neutral-400 hover:text-red-400 hover:bg-red-500/10"
+                  }
+                  style={isLight ? { color: activeColor.text } : undefined}
                 >
                   <DeleteOutlinedIcon fontSize="small" />
                 </IconButton>
@@ -228,7 +260,13 @@ export default function NoteCard({
             </div>
 
             {note.updatedAt && (
-              <span className="text-[10px] text-neutral-500">
+              <span
+                style={{
+                  color: isLight ? activeColor.text : "#737373",
+                  opacity: isLight ? 0.75 : 1,
+                }}
+                className="text-[10px]"
+              >
                 {new Date(note.updatedAt).toLocaleDateString(undefined, {
                   month: "short",
                   day: "numeric",

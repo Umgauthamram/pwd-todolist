@@ -38,16 +38,21 @@ export async function cacheNotesLocally(notes: NoteItem[]): Promise<void> {
     if (!notes || notes.length === 0) return;
     const records: OfflineNoteRecord[] = notes.map((n) => ({
       _id: n._id,
-      userId: n.userId,
+      userId: n.userId || "",
       title: n.title,
       content: n.content,
-      color: n.color,
+      color: n.color || "#212121",
       isPinned: Boolean(n.isPinned),
       isArchived: Boolean(n.isArchived),
       isTrashed: Boolean(n.isTrashed),
       isPrivate: Boolean(n.isPrivate),
       labels: n.labels || [],
-      updatedAt: n.updatedAt || new Date().toISOString(),
+      updatedAt:
+        typeof n.updatedAt === "string"
+          ? n.updatedAt
+          : n.updatedAt
+          ? (n.updatedAt as Date).toISOString()
+          : new Date().toISOString(),
       syncStatus: "synced",
     }));
 

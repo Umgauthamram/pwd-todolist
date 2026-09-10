@@ -18,7 +18,7 @@ import {
 } from "@mui/icons-material";
 import ColorPicker from "./ColorPicker";
 import { NoteItem } from "./NoteCard";
-import { NOTE_COLORS } from "@/constants/colors";
+import { getNoteColor } from "@/constants/colors";
 
 interface NoteModalProps {
   note: NoteItem | null;
@@ -107,10 +107,8 @@ export default function NoteModal({
     setLabels(labels.filter((l) => l !== lblToRemove));
   };
 
-  const activeColorObj = NOTE_COLORS.find(
-    (c) => c.bg.toLowerCase() === (color || "").toLowerCase()
-  );
-  const activeBorder = activeColorObj?.border || "#262626";
+  const activeColor = getNoteColor(color);
+  const isLight = Boolean(activeColor.isLight);
 
   return (
     <Dialog
@@ -121,10 +119,10 @@ export default function NoteModal({
       slotProps={{
         paper: {
           sx: {
-            backgroundColor: color && color !== "#0e0e10" && color !== "#202124" ? color : "#212121",
-            color: "#ffffff",
+            backgroundColor: activeColor.bg,
+            color: isLight ? activeColor.text : "#ffffff",
             borderRadius: "20px",
-            border: "none",
+            border: activeColor.border || "none",
             backgroundImage: "none",
             transition: "background-color 0.2s ease",
             overflow: "hidden",
@@ -134,10 +132,10 @@ export default function NoteModal({
       }}
     >
       {/* Top Rainbow Accent Strip */}
-      {activeColorObj?.accent && activeColorObj.id !== "default" && activeColorObj.id !== "black" && (
+      {activeColor.accent && activeColor.id !== "default" && activeColor.id !== "black" && (
         <div
           className="h-1.5 w-full shrink-0"
-          style={{ backgroundColor: activeColorObj.accent }}
+          style={{ backgroundColor: activeColor.accent }}
         />
       )}
 
@@ -149,13 +147,23 @@ export default function NoteModal({
             placeholder="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-transparent text-white placeholder-neutral-500 text-lg font-semibold focus:outline-none"
+            style={{ color: isLight ? activeColor.text : "#ffffff" }}
+            className={`w-full bg-transparent text-lg font-semibold focus:outline-none ${
+              isLight ? "placeholder-neutral-400" : "placeholder-neutral-500"
+            }`}
           />
           <Tooltip title={isPinned ? "Unpin note" : "Pin note"}>
             <IconButton
               size="small"
               onClick={() => setIsPinned(!isPinned)}
-              className={isPinned ? "text-white" : "text-neutral-400 hover:text-white"}
+              className={
+                isLight
+                  ? "hover:opacity-80 transition-opacity"
+                  : isPinned
+                  ? "text-white"
+                  : "text-neutral-400 hover:text-white"
+              }
+              style={isLight ? { color: activeColor.text } : undefined}
             >
               {isPinned ? <PushPinIcon fontSize="small" /> : <PushPinOutlinedIcon fontSize="small" />}
             </IconButton>
@@ -170,7 +178,10 @@ export default function NoteModal({
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={4}
-            className="w-full bg-transparent text-white placeholder-neutral-500 text-sm focus:outline-none resize-none leading-relaxed min-h-[120px]"
+            style={{ color: isLight ? activeColor.text : "#ffffff" }}
+            className={`w-full bg-transparent text-sm focus:outline-none resize-none leading-relaxed min-h-[120px] ${
+              isLight ? "placeholder-neutral-400" : "placeholder-neutral-500"
+            }`}
           />
         </div>
 
@@ -184,9 +195,9 @@ export default function NoteModal({
                 size="small"
                 onDelete={() => removeLabel(lbl)}
                 sx={{
-                  backgroundColor: "#1c1c1e",
-                  color: "#ffffff",
-                  borderColor: "#2e2e32",
+                  backgroundColor: isLight ? "#ffffff" : "#1c1c1e",
+                  color: isLight ? activeColor.text : "#ffffff",
+                  borderColor: isLight ? `${activeColor.text}40` : "#2e2e32",
                   fontSize: "11px",
                   height: "22px",
                 }}
@@ -201,22 +212,39 @@ export default function NoteModal({
                 value={newLabelInput}
                 onChange={(e) => setNewLabelInput(e.target.value)}
                 onKeyDown={handleAddLabel}
-                className="bg-black border border-[#262626] rounded-full px-2.5 py-0.5 text-xs text-white focus:outline-none placeholder-neutral-500 focus:border-white transition-colors"
+                className={`border rounded-full px-2.5 py-0.5 text-xs focus:outline-none transition-colors ${
+                  isLight
+                    ? "bg-white border-neutral-300 text-neutral-900 placeholder-neutral-400 focus:border-neutral-500"
+                    : "bg-black border-[#262626] text-white placeholder-neutral-500 focus:border-white"
+                }`}
               />
             )}
           </div>
         )}
 
         {/* Bottom Modal Actions */}
-        <div className="flex items-center justify-between pt-3 border-t border-[#262626]">
+        <div
+          className={`flex items-center justify-between pt-3 border-t ${
+            isLight ? "border-black/10" : "border-[#262626]"
+          }`}
+        >
           <div className="flex items-center gap-1">
-            <ColorPicker currentColor={color} onChangeColor={setColor} />
+            <ColorPicker
+              currentColor={color}
+              onChangeColor={setColor}
+              iconColor={isLight ? activeColor.text : undefined}
+            />
 
             <Tooltip title="Add label">
               <IconButton
                 size="small"
                 onClick={() => setShowLabelInput(!showLabelInput)}
-                className="text-neutral-400 hover:text-white hover:bg-neutral-800"
+                className={
+                  isLight
+                    ? "hover:opacity-80 transition-opacity"
+                    : "text-neutral-400 hover:text-white hover:bg-neutral-800"
+                }
+                style={isLight ? { color: activeColor.text } : undefined}
               >
                 <LabelOutlinedIcon fontSize="small" />
               </IconButton>
@@ -226,7 +254,14 @@ export default function NoteModal({
               <IconButton
                 size="small"
                 onClick={() => setIsArchived(!isArchived)}
-                className={isArchived ? "text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800"}
+                className={
+                  isLight
+                    ? "hover:opacity-80 transition-opacity"
+                    : isArchived
+                    ? "text-white"
+                    : "text-neutral-400 hover:text-white hover:bg-neutral-800"
+                }
+                style={isLight ? { color: activeColor.text } : undefined}
               >
                 {isArchived ? (
                   <UnarchiveOutlinedIcon fontSize="small" />
@@ -243,7 +278,12 @@ export default function NoteModal({
                   onMoveToTrash(note);
                   onClose();
                 }}
-                className="text-neutral-400 hover:text-red-400 hover:bg-red-500/10"
+                className={
+                  isLight
+                    ? "hover:opacity-80 transition-opacity"
+                    : "text-neutral-400 hover:text-red-400 hover:bg-red-500/10"
+                }
+                style={isLight ? { color: activeColor.text } : undefined}
               >
                 <DeleteOutlinedIcon fontSize="small" />
               </IconButton>
@@ -253,13 +293,17 @@ export default function NoteModal({
           <Button
             onClick={handleSaveAndClose}
             sx={{
-              color: "#ffffff",
+              color: isLight ? activeColor.text : "#ffffff",
               textTransform: "none",
               fontWeight: 600,
               fontSize: "13px",
               padding: "4px 18px",
               borderRadius: "8px",
-              "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.08)" },
+              "&:hover": {
+                backgroundColor: isLight
+                  ? "rgba(0, 0, 0, 0.05)"
+                  : "rgba(255, 255, 255, 0.08)",
+              },
             }}
           >
             Close

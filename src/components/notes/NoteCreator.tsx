@@ -15,7 +15,7 @@ import {
   Close as CloseIcon,
 } from "@mui/icons-material";
 import ColorPicker from "./ColorPicker";
-import { NOTE_COLORS } from "@/constants/colors";
+import { getNoteColor } from "@/constants/colors";
 
 export interface CreateNotePayload {
   title: string;
@@ -110,9 +110,7 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
     setLabels(labels.filter((l) => l !== labelToRemove));
   };
 
-  // Find border color matching selected card background
-  const activeColorObj = NOTE_COLORS.find((c) => c.bg.toLowerCase() === (color || "").toLowerCase());
-  const activeBorder = activeColorObj?.border || "#262626";
+
 
   if (!isExpanded) {
     return (
@@ -143,18 +141,24 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
       </div>
     );
   }
+  const activeColor = getNoteColor(color);
+  const isLight = Boolean(activeColor.isLight);
+
   return (
     <div className="w-full max-w-2xl mx-auto">
       <div
         ref={containerRef}
-        style={{ backgroundColor: color && color !== "#0e0e10" && color !== "#202124" ? color : "#212121" }}
-        className="rounded-2xl p-4 shadow-2xl transition-colors space-y-3 relative overflow-hidden"
+        style={{
+          backgroundColor: activeColor.bg,
+          border: activeColor.border || "none",
+        }}
+        className="rounded-2xl p-4 shadow-2xl transition-colors space-y-3 relative"
       >
         {/* Top Rainbow Accent Strip */}
-        {activeColorObj?.accent && activeColorObj.id !== "default" && activeColorObj.id !== "black" && (
+        {activeColor.accent && activeColor.id !== "default" && activeColor.id !== "black" && (
           <div
-            className="absolute top-0 left-0 right-0 h-1 opacity-90"
-            style={{ backgroundColor: activeColorObj.accent }}
+            className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl opacity-90"
+            style={{ backgroundColor: activeColor.accent }}
           />
         )}
 
@@ -165,13 +169,23 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
             placeholder="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-transparent text-white placeholder-neutral-500 text-base font-semibold focus:outline-none"
+            style={{ color: isLight ? activeColor.text : "#ffffff" }}
+            className={`w-full bg-transparent text-base font-semibold focus:outline-none ${
+              isLight ? "placeholder-neutral-400" : "placeholder-neutral-500"
+            }`}
           />
           <Tooltip title={isPinned ? "Unpin note" : "Pin note"}>
             <IconButton
               size="small"
               onClick={() => setIsPinned(!isPinned)}
-              className={isPinned ? "text-white" : "text-neutral-400 hover:text-white"}
+              className={
+                isLight
+                  ? "hover:opacity-80 transition-opacity"
+                  : isPinned
+                  ? "text-white"
+                  : "text-neutral-400 hover:text-white"
+              }
+              style={isLight ? { color: activeColor.text } : undefined}
             >
               {isPinned ? <PushPinIcon fontSize="small" /> : <PushPinOutlinedIcon fontSize="small" />}
             </IconButton>
@@ -186,7 +200,10 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={3}
-            className="w-full bg-transparent text-white placeholder-neutral-500 text-sm focus:outline-none resize-none leading-relaxed"
+            style={{ color: isLight ? activeColor.text : "#ffffff" }}
+            className={`w-full bg-transparent text-sm focus:outline-none resize-none leading-relaxed ${
+              isLight ? "placeholder-neutral-400" : "placeholder-neutral-500"
+            }`}
           />
         </div>
 
@@ -200,9 +217,9 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
                 size="small"
                 onDelete={() => removeLabel(lbl)}
                 sx={{
-                  backgroundColor: "#1c1c1e",
-                  color: "#ffffff",
-                  borderColor: "#2e2e32",
+                  backgroundColor: isLight ? "#ffffff" : "#1c1c1e",
+                  color: isLight ? activeColor.text : "#ffffff",
+                  borderColor: isLight ? `${activeColor.text}40` : "#2e2e32",
                   fontSize: "11px",
                   height: "22px",
                 }}
@@ -217,22 +234,39 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
                 value={newLabelInput}
                 onChange={(e) => setNewLabelInput(e.target.value)}
                 onKeyDown={handleAddLabel}
-                className="bg-black border border-[#262626] rounded-full px-2.5 py-0.5 text-xs text-white focus:outline-none placeholder-neutral-500 focus:border-white transition-colors"
+                className={`border rounded-full px-2.5 py-0.5 text-xs focus:outline-none transition-colors ${
+                  isLight
+                    ? "bg-white border-neutral-300 text-neutral-900 placeholder-neutral-400 focus:border-neutral-500"
+                    : "bg-black border-[#262626] text-white placeholder-neutral-500 focus:border-white"
+                }`}
               />
             )}
           </div>
         )}
 
         {/* Bottom Actions Bar */}
-        <div className="flex items-center justify-between pt-2 border-t border-white/5">
+        <div
+          className={`flex items-center justify-between pt-2 border-t ${
+            isLight ? "border-black/10" : "border-white/5"
+          }`}
+        >
           <div className="flex items-center gap-1">
-            <ColorPicker currentColor={color} onChangeColor={setColor} />
+            <ColorPicker
+              currentColor={color}
+              onChangeColor={setColor}
+              iconColor={isLight ? activeColor.text : undefined}
+            />
 
             <Tooltip title="Add label">
               <IconButton
                 size="small"
                 onClick={() => setShowLabelInput(!showLabelInput)}
-                className="text-neutral-400 hover:text-white hover:bg-neutral-800"
+                className={
+                  isLight
+                    ? "hover:opacity-80 transition-opacity"
+                    : "text-neutral-400 hover:text-white hover:bg-neutral-800"
+                }
+                style={isLight ? { color: activeColor.text } : undefined}
               >
                 <LabelOutlinedIcon fontSize="small" />
               </IconButton>
@@ -242,7 +276,14 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
               <IconButton
                 size="small"
                 onClick={() => setIsArchived(!isArchived)}
-                className={isArchived ? "text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800"}
+                className={
+                  isLight
+                    ? "hover:opacity-80 transition-opacity"
+                    : isArchived
+                    ? "text-white"
+                    : "text-neutral-400 hover:text-white hover:bg-neutral-800"
+                }
+                style={isLight ? { color: activeColor.text } : undefined}
               >
                 <ArchiveOutlinedIcon fontSize="small" />
               </IconButton>
@@ -255,13 +296,17 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
               disabled={saving}
               size="small"
               sx={{
-                color: "#ffffff",
+                color: isLight ? activeColor.text : "#ffffff",
                 textTransform: "none",
                 fontWeight: 600,
                 fontSize: "13px",
                 padding: "4px 16px",
                 borderRadius: "8px",
-                "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.08)" },
+                "&:hover": {
+                  backgroundColor: isLight
+                    ? "rgba(0, 0, 0, 0.05)"
+                    : "rgba(255, 255, 255, 0.08)",
+                },
               }}
             >
               {saving ? "Saving..." : "Close"}
