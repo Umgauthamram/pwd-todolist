@@ -25,6 +25,8 @@ import {
   RestoreFromTrash as RestoreFromTrashIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
+  Menu as MenuIcon,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 import { useAuth } from "@/context/AuthContext";
 import AuthScreen from "@/components/auth/AuthScreen";
@@ -55,6 +57,7 @@ export default function HomePage() {
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -442,7 +445,7 @@ export default function HomePage() {
     },
     {
       id: "private" as NavItem,
-      label: "Private Space",
+      label: "Secure",
       icon: isPrivateUnlocked ? (
         <LockOpenOutlinedIcon fontSize="small" className="text-white" />
       ) : (
@@ -461,169 +464,272 @@ export default function HomePage() {
     },
     {
       id: "trash" as NavItem,
-      label: "Trash",
+      label: "Bin",
       icon: <DeleteOutlinedIcon fontSize="small" />,
       count: notes.filter((n) => n.isTrashed).length,
+    },
+    {
+      id: "settings" as NavItem,
+      label: "Settings",
+      icon: <SettingsOutlinedIcon fontSize="small" />,
     },
   ];
 
   return (
     <Box className="h-screen max-h-screen overflow-hidden bg-black text-white flex flex-col selection:bg-white selection:text-black">
-      {/* Top Header Bar: Section Indicator, Search Icon Button, View Mode Toggle, Profile/Settings Button */}
-      <header className="shrink-0 z-40 h-16 border-b border-[#262626] bg-black/95 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between gap-3">
-        {/* Left: Active Section Title */}
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-sm sm:text-base font-bold text-white tracking-tight">
-            {activeTab === "notes"
-              ? "Notes"
-              : activeTab === "private"
-              ? "Private Space"
-              : activeTab === "archive"
-              ? "Archive"
-              : activeTab === "trash"
-              ? "Trash"
-              : "Settings"}
-          </span>
-          {selectedLabel && (
-            <span className="text-xs font-mono text-neutral-400 bg-neutral-900 border border-[#262626] px-2 py-0.5 rounded-full truncate">
-              #{selectedLabel}
+      {/* Top Header Bar: 3-line Hamburger Menu (Mobile), Section Title, Search Bar, Single Grid/List View Toggle, Profile Button */}
+      <header className="shrink-0 z-40 h-16 border-b border-[#262626] bg-black/95 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4">
+        {/* Left: 3-line Hamburger Menu Button on Mobile + Active Section Title */}
+        <div className="flex items-center gap-2 shrink-0">
+          <IconButton
+            onClick={() => setIsMobileSidebarOpen(true)}
+            className="md:hidden text-neutral-300 hover:text-white hover:bg-neutral-900 -ml-1"
+            size="small"
+            aria-label="Open navigation sidebar"
+          >
+            <MenuIcon fontSize="small" />
+          </IconButton>
+
+          <div className="hidden sm:flex items-center gap-2 min-w-0">
+            <span className="text-sm sm:text-base font-bold text-white tracking-tight">
+              {activeTab === "notes"
+                ? "Notes"
+                : activeTab === "private"
+                ? "Secure"
+                : activeTab === "archive"
+                ? "Archive"
+                : activeTab === "trash"
+                ? "Bin"
+                : "Settings"}
             </span>
-          )}
+            {selectedLabel && (
+              <span className="text-xs font-mono text-neutral-400 bg-neutral-900 border border-[#262626] px-2 py-0.5 rounded-full truncate">
+                #{selectedLabel}
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Right: Search Icon, Grid/List Toggle, and Profile/Settings Button */}
+        {/* Center: Search Bar in Top */}
+        <div className="flex-1 max-w-xl mx-auto flex items-center min-w-0 px-1 sm:px-3">
+          <button
+            type="button"
+            onClick={() => setIsSearchOpen(true)}
+            className="w-full flex items-center gap-2.5 px-3.5 py-2 bg-[#202124] hover:bg-[#28292c] text-neutral-400 hover:text-white rounded-full transition-all border border-transparent hover:border-[#3c4043] cursor-pointer text-xs sm:text-sm text-left shadow-sm"
+            aria-label="Search notes"
+          >
+            <SearchIcon fontSize="small" className="text-neutral-400 shrink-0" />
+            <span className="truncate flex-1">Search your notes...</span>
+            <span className="hidden md:inline-block text-[10px] font-mono text-neutral-500 bg-[#141517] px-1.5 py-0.5 rounded border border-[#2e2f33]">
+              Ctrl K
+            </span>
+          </button>
+        </div>
+
+        {/* Right Corner: Grid / List view toggle (ONLY ONE ICON AT A TIME) + Profile Button */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-          {/* Search Icon Button: Opens Dedicated Search Screen */}
-          <Tooltip title="Search notes">
+          <Tooltip title={isGridView ? "Switch to list view" : "Switch to grid view"}>
             <IconButton
-              onClick={() => setIsSearchOpen(true)}
+              onClick={() => toggleViewMode(isGridView ? "list" : "grid")}
               className="text-neutral-400 hover:text-white hover:bg-neutral-900 border border-transparent hover:border-[#262626]"
               size="small"
-              aria-label="Search notes"
+              aria-label={isGridView ? "Switch to list view" : "Switch to grid view"}
             >
-              <SearchIcon fontSize="small" />
+              {isGridView ? (
+                <ViewStreamIcon fontSize="small" />
+              ) : (
+                <GridViewIcon fontSize="small" />
+              )}
             </IconButton>
           </Tooltip>
 
-          {/* Grid / List View Segmented Control */}
-          <div className="flex items-center bg-[#202124] rounded-xl p-0.5">
-            <Tooltip title="Grid view">
-              <button
-                type="button"
-                onClick={() => toggleViewMode("grid")}
-                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                  isGridView
-                    ? "bg-white text-black shadow-sm"
-                    : "text-neutral-400 hover:text-white hover:bg-neutral-900"
-                }`}
-                aria-label="Grid view"
-              >
-                <GridViewIcon fontSize="small" sx={{ fontSize: 17 }} />
-              </button>
-            </Tooltip>
-            <Tooltip title="List view">
-              <button
-                type="button"
-                onClick={() => toggleViewMode("list")}
-                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                  !isGridView
-                    ? "bg-white text-black shadow-sm"
-                    : "text-neutral-400 hover:text-white hover:bg-neutral-900"
-                }`}
-                aria-label="List view"
-              >
-                <ViewStreamIcon fontSize="small" sx={{ fontSize: 17 }} />
-              </button>
-            </Tooltip>
-          </div>
-
-          {/* User Profile Button: Navigates to Settings Page */}
-          <div className="flex items-center pl-1.5 sm:pl-2 border-l border-[#262626]">
-            <Tooltip
-              title={
+          {/* User Profile Button: Navigates to Settings */}
+          <Tooltip
+            title={
+              activeTab === "settings"
+                ? "Settings (Active)"
+                : `Signed in as ${user.email} (Open Settings)`
+            }
+          >
+            <button
+              type="button"
+              onClick={() => setActiveTab("settings")}
+              className={`flex items-center gap-2 cursor-pointer p-0.5 sm:px-2 sm:py-1 rounded-full transition-all border ${
                 activeTab === "settings"
-                  ? "Settings (Active)"
-                  : `Signed in as ${user.email} (Open Settings)`
-              }
+                  ? "bg-white text-black border-white font-semibold shadow-sm"
+                  : "bg-[#0e0e10] hover:bg-neutral-900 text-white border-[#262626] hover:border-neutral-500"
+              }`}
+              aria-label="Settings and Profile"
             >
-              <button
-                type="button"
-                onClick={() => setActiveTab("settings")}
-                className={`flex items-center gap-2 cursor-pointer px-2.5 py-1 rounded-full transition-all border ${
-                  activeTab === "settings"
-                    ? "bg-white text-black border-white font-semibold shadow-sm"
-                    : "bg-[#0e0e10] hover:bg-neutral-900 text-white border-[#262626] hover:border-neutral-500"
+              <div
+                className={`w-6 h-6 rounded-full font-bold text-xs flex items-center justify-center shrink-0 ${
+                  activeTab === "settings" ? "bg-black text-white" : "bg-white text-black"
                 }`}
-                aria-label="Settings and Profile"
               >
-                <div
-                  className={`w-6 h-6 rounded-full font-bold text-xs flex items-center justify-center shrink-0 ${
-                    activeTab === "settings" ? "bg-black text-white" : "bg-white text-black"
-                  }`}
-                >
-                  {user.email.charAt(0).toUpperCase()}
-                </div>
-                <span className="text-xs font-medium hidden sm:inline max-w-[120px] truncate">
-                  {user.email.split("@")[0]}
-                </span>
-                <SettingsOutlinedIcon
-                  sx={{ fontSize: 15 }}
-                  className={activeTab === "settings" ? "text-black" : "text-neutral-400"}
-                />
-              </button>
-            </Tooltip>
-          </div>
+                {user.email.charAt(0).toUpperCase()}
+              </div>
+              <span className="text-xs font-medium hidden md:inline max-w-[100px] truncate">
+                {user.email.split("@")[0]}
+              </span>
+            </button>
+          </Tooltip>
         </div>
       </header>
 
-      {/* Mobile Top Bar Navigation (Hidden on desktop md:) */}
-      <nav aria-label="Mobile Navigation" className="md:hidden shrink-0 z-30 bg-black/95 backdrop-blur-md border-b border-[#262626] px-3 py-2 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
-        <div className="flex items-center justify-around gap-1 w-full overflow-x-auto no-scrollbar py-0.5 min-w-0">
-          {navItems.map((item) => {
-            const isActive = activeTab === item.id && !selectedLabel;
-            return (
-              <Tooltip key={item.id} title={item.label} enterDelay={500}>
-                <button
-                  onClick={() => handleNavClick(item.id)}
-                  aria-label={item.label}
-                  className={`flex items-center justify-center p-2 rounded-full text-xs font-medium transition-all shrink-0 cursor-pointer ${
-                    isActive
-                      ? "bg-white text-black font-semibold shadow-sm"
-                      : "text-neutral-400 hover:text-white hover:bg-neutral-900 border border-transparent hover:border-[#262626]"
-                  }`}
-                >
-                  <span className={isActive ? "text-black" : "text-neutral-400"}>
-                    {item.icon}
-                  </span>
-                </button>
-              </Tooltip>
-            );
-          })}
+      {/* Mobile Slide-out Sidebar Drawer (Replaces old navbar) */}
+      {isMobileSidebarOpen && (
+        <div className="fixed inset-0 z-50 flex md:hidden" aria-modal="true" role="dialog">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsMobileSidebarOpen(false)}
+            aria-hidden="true"
+          />
 
-          {/* Labels horizontal chips on mobile */}
-          {allLabels.length > 0 && (
-            <div className="flex items-center gap-1.5 pl-2 border-l border-[#262626]">
-              {allLabels.map((lbl) => {
-                const isLabelActive = selectedLabel === lbl;
+          {/* Drawer container */}
+          <div className="relative w-72 max-w-[80vw] h-full bg-[#0e0e10] border-r border-[#262626] flex flex-col justify-between z-10 shadow-2xl">
+            {/* Drawer Header */}
+            <div className="p-4 border-b border-[#262626] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-white text-black font-black flex items-center justify-center text-sm shadow">
+                  B
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-white tracking-tight">Beginning</h2>
+                  <p className="text-[11px] text-neutral-400 truncate max-w-[130px]">{user.email}</p>
+                </div>
+              </div>
+              <IconButton
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className="text-neutral-400 hover:text-white hover:bg-neutral-900"
+                size="small"
+                aria-label="Close sidebar"
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </div>
+
+            {/* Drawer Navigation List: notes, scure, archive, bin, settings */}
+            <div className="flex-1 overflow-y-auto no-scrollbar p-3 space-y-1">
+              {navItems.map((item) => {
+                const isActive = activeTab === item.id && !selectedLabel;
                 return (
                   <button
-                    key={lbl}
-                    onClick={() => setSelectedLabel(isLabelActive ? null : lbl)}
-                    className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-all shrink-0 cursor-pointer ${
-                      isLabelActive
-                        ? "bg-white text-black font-semibold"
-                        : "text-neutral-400 hover:text-white hover:bg-neutral-900 border border-[#262626]"
+                    key={item.id}
+                    onClick={() => {
+                      handleNavClick(item.id);
+                      setIsMobileSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-white text-black font-semibold shadow-sm"
+                        : "text-neutral-400 hover:text-white hover:bg-neutral-900/80"
                     }`}
                   >
-                    <LabelOutlinedIcon sx={{ fontSize: 13 }} />
-                    <span>#{lbl}</span>
+                    <div className="flex items-center gap-3">
+                      <span className={isActive ? "text-black" : "text-neutral-400"}>
+                        {item.icon}
+                      </span>
+                      <span className="text-sm">{item.label}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      {item.badge && (
+                        <span
+                          className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
+                            isActive
+                              ? "bg-black text-white"
+                              : "bg-neutral-900 text-neutral-300 border border-[#262626]"
+                          }`}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                      {item.count !== undefined && item.count > 0 && (
+                        <span
+                          className={`text-xs font-mono font-medium ${
+                            isActive ? "text-neutral-800 font-bold" : "text-neutral-500"
+                          }`}
+                        >
+                          {item.count}
+                        </span>
+                      )}
+                    </div>
                   </button>
                 );
               })}
+
+              {/* Labels list inside mobile drawer */}
+              {allLabels.length > 0 && (
+                <div className="pt-3 mt-3 border-t border-[#262626]">
+                  <div className="px-3 py-1 flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-neutral-500">
+                    <span>Labels</span>
+                    {selectedLabel && (
+                      <button
+                        onClick={() => {
+                          setSelectedLabel(null);
+                          setIsMobileSidebarOpen(false);
+                        }}
+                        className="text-[10px] text-neutral-400 hover:text-white normal-case font-sans underline cursor-pointer"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                  <div className="space-y-1 mt-1">
+                    {allLabels.map((lbl) => {
+                      const isLabelActive = selectedLabel === lbl;
+                      return (
+                        <button
+                          key={lbl}
+                          onClick={() => {
+                            setSelectedLabel(isLabelActive ? null : lbl);
+                            setIsMobileSidebarOpen(false);
+                          }}
+                          className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                            isLabelActive
+                              ? "bg-white text-black font-semibold shadow-sm"
+                              : "text-neutral-400 hover:text-white hover:bg-neutral-900/80"
+                          }`}
+                        >
+                          <LabelOutlinedIcon sx={{ fontSize: 16 }} />
+                          <span className="truncate">#{lbl}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Drawer Footer */}
+            <div className="p-3 border-t border-[#262626] bg-[#09090b] flex items-center justify-between">
+              {isPrivateUnlocked ? (
+                <button
+                  onClick={() => {
+                    handleLockPrivateSpace();
+                    setIsMobileSidebarOpen(false);
+                  }}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-amber-400 bg-amber-400/10 border border-amber-400/20 hover:bg-amber-400/20 transition-all cursor-pointer"
+                >
+                  <LockOutlinedIcon sx={{ fontSize: 14 }} />
+                  <span>Lock Secure</span>
+                </button>
+              ) : (
+                <div />
+              )}
+              <button
+                onClick={() => {
+                  logout();
+                  setIsMobileSidebarOpen(false);
+                }}
+                className="text-xs text-neutral-500 hover:text-red-400 transition-colors cursor-pointer px-2 py-1.5"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
         </div>
-      </nav>
+      )}
 
       {/* Main Workspace: Desktop Sidebar (Windows / Mac) + Main Body */}
       <div className="flex-1 flex flex-row min-h-0 overflow-hidden">
