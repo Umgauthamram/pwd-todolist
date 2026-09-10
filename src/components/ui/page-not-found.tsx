@@ -6,6 +6,16 @@ import { ArrowLeft, Home } from "lucide-react";
 
 // Combined component for 404 page
 export default function NotFoundPage() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <div className="w-full h-screen h-[100dvh] bg-black" />;
+  }
+
   return (
     <div className="w-full h-screen h-[100dvh] bg-black overflow-hidden flex justify-center items-center relative select-none">
       <MessageDisplay />
