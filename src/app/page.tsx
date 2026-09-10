@@ -951,7 +951,9 @@ export default function HomePage() {
             )}
 
             {/* SETTINGS VIEW */}
-            {activeTab === "settings" && <SettingsView />}
+            {activeTab === "settings" && (
+              <SettingsView onBack={() => setActiveTab("notes")} />
+            )}
           </div>
         </main>
       </div>

@@ -14,19 +14,24 @@ import {
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon,
   Logout as LogoutIcon,
-  ExpandMore as ExpandMoreIcon,
+  ArrowBack as ArrowBackIcon,
+  ChevronRight as ChevronRightIcon,
 } from "@mui/icons-material";
 import { useAuth } from "@/context/AuthContext";
 import { getLocalNotesCount, clearLocalNotes } from "@/lib/dexie";
 import PinModal from "@/components/private-space/PinModal";
 
-type SettingsSection = "profile" | "pin" | "password" | "pwa";
+export type SettingsSection = "profile" | "pin" | "password" | "pwa";
 
-export default function SettingsView() {
+interface SettingsViewProps {
+  onBack?: () => void;
+}
+
+export default function SettingsView({ onBack }: SettingsViewProps) {
   const { user, openAuthModal, logout, checkPrivateStatus } = useAuth();
 
-  // Active expanded section - clicking title reveals that content
-  const [activeSection, setActiveSection] = useState<SettingsSection | null>("profile");
+  // Active separate screen: null = Main Settings List (sub titles only), or specific section screen
+  const [activeSection, setActiveSection] = useState<SettingsSection | null>(null);
 
   // Password change state
   const [currentPassword, setCurrentPassword] = useState("");
@@ -71,10 +76,6 @@ export default function SettingsView() {
       };
     }
   }, []);
-
-  const toggleSection = (section: SettingsSection) => {
-    setActiveSection((prev) => (prev === section ? null : section));
-  };
 
   // Change password submit
   const handleChangePassword = async (e: React.FormEvent) => {
@@ -168,179 +169,260 @@ export default function SettingsView() {
     setCachedNotesCount(0);
   };
 
-  const sections: { id: SettingsSection; label: string; icon: React.ReactNode }[] = [
-    { id: "profile", label: "Account Profile", icon: <PersonIcon sx={{ fontSize: 16 }} /> },
-    { id: "pin", label: "Private Space PIN", icon: <LockOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { id: "password", label: "Password & Security", icon: <VpnKeyIcon sx={{ fontSize: 16 }} /> },
-    { id: "pwa", label: "PWA & Storage", icon: <CloudSyncOutlinedIcon sx={{ fontSize: 16 }} /> },
+  // Section list definitions for main screen
+  const menuSections: {
+    id: SettingsSection;
+    title: string;
+    subtitle: string;
+    badge: string;
+    icon: React.ReactNode;
+  }[] = [
+    {
+      id: "profile",
+      title: "Account Profile",
+      subtitle: user ? `${user.email} • Account details and sign out` : "Guest session • Sign in / register",
+      badge: user ? "Signed In" : "Guest",
+      icon: <PersonIcon sx={{ fontSize: 20 }} />,
+    },
+    {
+      id: "pin",
+      title: "Private Space 4-Digit PIN",
+      subtitle: "Bcrypt-encrypted isolation for sensitive notes",
+      badge: user?.hasPin ? "Configured" : "Not Set",
+      icon: <LockOutlinedIcon sx={{ fontSize: 20 }} />,
+    },
+    {
+      id: "password",
+      title: "Password & Security",
+      subtitle: "Update your primary account login credentials",
+      badge: "Security",
+      icon: <VpnKeyIcon sx={{ fontSize: 20 }} />,
+    },
+    {
+      id: "pwa",
+      title: "PWA & Offline Storage",
+      subtitle: `Service Worker, IndexedDB caching (${cachedNotesCount} notes), and install`,
+      badge: isOnline ? "Online" : "Offline",
+      icon: <CloudSyncOutlinedIcon sx={{ fontSize: 20 }} />,
+    },
   ];
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center gap-3 pb-3 border-b border-[#262626]">
-        <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-[#262626] flex items-center justify-center text-white">
-          <SettingsOutlinedIcon />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold text-white tracking-tight">Settings &amp; Preferences</h1>
-          <p className="text-xs text-neutral-400 mt-0.5">
-            Select any of the 4 sections below to view and manage its settings.
-          </p>
-        </div>
-      </div>
+      {/* ========================================================================= */}
+      {/* MAIN SCREEN: Sub Titles Only (activeSection === null) */}
+      {/* ========================================================================= */}
+      {activeSection === null && (
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between pb-4 border-b border-[#262626]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-[#262626] flex items-center justify-center text-white">
+                <SettingsOutlinedIcon />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white tracking-tight">Settings</h1>
+                <p className="text-xs text-neutral-400 mt-0.5">
+                  Select a section below to configure its options.
+                </p>
+              </div>
+            </div>
 
-      {/* 4 Section Navigation Tabs / Quick Jump */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {sections.map((sec) => {
-          const isActive = activeSection === sec.id;
-          return (
+            {onBack && (
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={onBack}
+                startIcon={<ArrowBackIcon sx={{ fontSize: 14 }} />}
+                sx={{
+                  borderColor: "#262626",
+                  color: "#neutral-300",
+                  textTransform: "none",
+                  fontSize: "12px",
+                  borderRadius: "8px",
+                  "&:hover": { borderColor: "#525252", backgroundColor: "rgba(255,255,255,0.05)" },
+                }}
+              >
+                Back to Notes
+              </Button>
+            )}
+          </div>
+
+          {/* List of Sub Titles / Section Cards */}
+          <div className="space-y-3">
+            {menuSections.map((sec) => (
+              <button
+                key={sec.id}
+                type="button"
+                onClick={() => setActiveSection(sec.id)}
+                className="w-full p-4 sm:p-5 rounded-2xl bg-[#0e0e10] hover:bg-neutral-900 border border-[#262626] hover:border-neutral-500 transition-all flex items-center justify-between gap-4 text-left cursor-pointer group shadow-sm"
+              >
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-black border border-[#262626] flex items-center justify-center text-white shrink-0 group-hover:border-neutral-500 transition-colors">
+                    {sec.icon}
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="text-sm sm:text-base font-semibold text-white tracking-tight group-hover:text-white transition-colors truncate">
+                      {sec.title}
+                    </h2>
+                    <p className="text-xs text-neutral-400 truncate mt-0.5">
+                      {sec.subtitle}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5 shrink-0">
+                  <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-neutral-900 text-neutral-300 border border-[#262626] hidden sm:inline">
+                    {sec.badge}
+                  </span>
+                  <ChevronRightIcon
+                    sx={{ fontSize: 20 }}
+                    className="text-neutral-500 group-hover:text-white group-hover:translate-x-1 transition-all"
+                  />
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* SEPARATE SCREEN 1: Account Profile */}
+      {/* ========================================================================= */}
+      {activeSection === "profile" && (
+        <div className="space-y-6">
+          {/* Back to Settings Header */}
+          <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
             <button
-              key={sec.id}
-              onClick={() => toggleSection(sec.id)}
-              className={`flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs font-semibold transition-all border ${
-                isActive
-                  ? "bg-white text-black border-white shadow"
-                  : "bg-[#0e0e10] text-neutral-400 hover:text-white border-[#262626] hover:border-neutral-500"
-              }`}
+              type="button"
+              onClick={() => setActiveSection(null)}
+              className="flex items-center gap-2 text-xs font-semibold text-neutral-400 hover:text-white py-1 px-2.5 rounded-lg hover:bg-neutral-900 border border-transparent hover:border-[#262626] transition-all cursor-pointer group"
             >
-              {sec.icon}
-              <span className="truncate">{sec.label}</span>
+              <ArrowBackIcon sx={{ fontSize: 16 }} className="group-hover:-translate-x-1 transition-transform" />
+              <span>Back to Settings</span>
             </button>
-          );
-        })}
-      </div>
+            <span className="text-xs font-mono text-neutral-400">Section 1 of 4</span>
+          </div>
 
-      <div className="space-y-4">
-        {/* ======================================================== */}
-        {/* 1. Account Profile Section */}
-        {/* ======================================================== */}
-        <div className="rounded-2xl bg-[#0e0e10] border border-[#262626] overflow-hidden transition-all">
-          <button
-            type="button"
-            onClick={() => toggleSection("profile")}
-            className="w-full p-5 sm:p-6 flex items-center justify-between text-left hover:bg-neutral-900/50 transition-colors cursor-pointer"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-black border border-[#262626] flex items-center justify-center text-white">
-                <PersonIcon sx={{ fontSize: 18 }} />
+          {/* Section Screen Container */}
+          <div className="rounded-2xl bg-[#0e0e10] border border-[#262626] p-6 sm:p-8 space-y-6 shadow-xl">
+            <div className="flex items-center gap-3.5 pb-4 border-b border-[#1f1f22]">
+              <div className="w-11 h-11 rounded-xl bg-black border border-[#262626] flex items-center justify-center text-white">
+                <PersonIcon />
               </div>
               <div>
-                <h2 className="text-base font-semibold text-white">1. Account Profile</h2>
+                <h2 className="text-lg font-bold text-white tracking-tight">Account Profile</h2>
                 <p className="text-xs text-neutral-400">
-                  {user ? user.email : "Guest Session"} &bull; Account status &amp; Sign Out
+                  Manage your account credentials, session details, and access control.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-neutral-900 text-neutral-300 border border-[#262626] hidden sm:inline">
-                {user ? "Signed In" : "Guest"}
-              </span>
-              <ExpandMoreIcon
-                className={`text-neutral-400 transition-transform duration-300 ${
-                  activeSection === "profile" ? "rotate-180 text-white" : ""
-                }`}
-              />
-            </div>
-          </button>
-
-          {/* Collapsible Content */}
-          {activeSection === "profile" && (
-            <div className="px-5 pb-6 sm:px-6 border-t border-[#1f1f22] pt-4 space-y-4">
-              {user ? (
-                <div className="space-y-4 text-xs">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="p-3.5 rounded-xl bg-black border border-[#262626]">
-                      <span className="text-neutral-400 text-[11px]">Email Address</span>
-                      <p className="font-mono text-white text-sm font-medium mt-1">{user.email}</p>
-                    </div>
-                    <div className="p-3.5 rounded-xl bg-black border border-[#262626]">
-                      <span className="text-neutral-400 text-[11px]">User ID</span>
-                      <p className="font-mono text-neutral-300 text-xs truncate mt-1">{user.id}</p>
-                    </div>
+            {user ? (
+              <div className="space-y-5 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div className="p-4 rounded-xl bg-black border border-[#262626]">
+                    <span className="text-neutral-400 text-[11px] font-medium block">Email Address</span>
+                    <p className="font-mono text-white text-sm font-semibold mt-1 truncate">{user.email}</p>
                   </div>
-
-                  {/* REQUIREMENT: Logout button inside settings page */}
-                  <div className="p-4 rounded-xl bg-black border border-[#262626] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <p className="font-medium text-white text-xs">Sign Out of Account</p>
-                      <p className="text-[11px] text-neutral-500 mt-0.5">
-                        Safely terminate your session and return to sign in screen.
-                      </p>
-                    </div>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={logout}
-                      startIcon={<LogoutIcon sx={{ fontSize: 16 }} />}
-                      sx={{
-                        backgroundColor: "#ffffff",
-                        color: "#000000",
-                        fontWeight: 600,
-                        fontSize: "12px",
-                        textTransform: "none",
-                        borderRadius: "8px",
-                        px: 2,
-                        py: 0.8,
-                        "&:hover": { backgroundColor: "#e5e5e5" },
-                      }}
-                    >
-                      Sign Out
-                    </Button>
+                  <div className="p-4 rounded-xl bg-black border border-[#262626]">
+                    <span className="text-neutral-400 text-[11px] font-medium block">Account Status</span>
+                    <p className="font-mono text-white text-sm font-semibold mt-1">Active / Verified</p>
                   </div>
                 </div>
-              ) : (
-                <div className="p-4 rounded-xl bg-black border border-[#262626] text-xs text-neutral-400 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <span>You are currently browsing as a guest. Create an account to sync notes across devices.</span>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => openAuthModal("login")}
-                      sx={{ borderColor: "#262626", color: "#ffffff", textTransform: "none", fontSize: "12px" }}
-                    >
-                      Sign In
-                    </Button>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={() => openAuthModal("register")}
-                      sx={{ backgroundColor: "#ffffff", color: "#000000", fontWeight: 600, textTransform: "none", fontSize: "12px", "&:hover": { backgroundColor: "#e5e5e5" } }}
-                    >
-                      Sign Up
-                    </Button>
+
+                {/* Logout Button inside Settings Page */}
+                <div className="p-4 sm:p-5 rounded-xl bg-black border border-[#262626] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <p className="font-semibold text-white text-sm">Sign Out of Account</p>
+                    <p className="text-xs text-neutral-400 mt-0.5">
+                      Safely terminate your session on this device and return to sign in.
+                    </p>
                   </div>
+                  <Button
+                    variant="contained"
+                    size="medium"
+                    onClick={logout}
+                    startIcon={<LogoutIcon sx={{ fontSize: 16 }} />}
+                    sx={{
+                      backgroundColor: "#ffffff",
+                      color: "#000000",
+                      fontWeight: 600,
+                      fontSize: "13px",
+                      textTransform: "none",
+                      borderRadius: "10px",
+                      px: 3,
+                      py: 1,
+                      "&:hover": { backgroundColor: "#e5e5e5" },
+                      shrink: 0,
+                    }}
+                  >
+                    Sign Out
+                  </Button>
                 </div>
-              )}
-            </div>
-          )}
+              </div>
+            ) : (
+              <div className="p-5 rounded-xl bg-black border border-[#262626] text-xs text-neutral-400 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <span>You are currently browsing as a guest. Create an account to sync notes across devices.</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => openAuthModal("login")}
+                    sx={{ borderColor: "#262626", color: "#ffffff", textTransform: "none", fontSize: "12px" }}
+                  >
+                    Sign In
+                  </Button>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => openAuthModal("register")}
+                    sx={{ backgroundColor: "#ffffff", color: "#000000", fontWeight: 600, textTransform: "none", fontSize: "12px", "&:hover": { backgroundColor: "#e5e5e5" } }}
+                  >
+                    Sign Up
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
+      )}
 
-        {/* ======================================================== */}
-        {/* 2. Private Space 4-Digit PIN Section */}
-        {/* ======================================================== */}
-        <div className="rounded-2xl bg-[#0e0e10] border border-[#262626] overflow-hidden transition-all">
-          <button
-            type="button"
-            onClick={() => toggleSection("pin")}
-            className="w-full p-5 sm:p-6 flex items-center justify-between text-left hover:bg-neutral-900/50 transition-colors cursor-pointer"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-black border border-[#262626] flex items-center justify-center text-white">
-                <LockOutlinedIcon sx={{ fontSize: 18 }} />
-              </div>
-              <div>
-                <h2 className="text-base font-semibold text-white">2. Private Space 4-Digit PIN</h2>
-                <p className="text-xs text-neutral-400">
-                  Bcrypt-encrypted isolation for sensitive notes
-                </p>
-              </div>
-            </div>
+      {/* ========================================================================= */}
+      {/* SEPARATE SCREEN 2: Private Space 4-Digit PIN */}
+      {/* ========================================================================= */}
+      {activeSection === "pin" && (
+        <div className="space-y-6">
+          {/* Back to Settings Header */}
+          <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
+            <button
+              type="button"
+              onClick={() => setActiveSection(null)}
+              className="flex items-center gap-2 text-xs font-semibold text-neutral-400 hover:text-white py-1 px-2.5 rounded-lg hover:bg-neutral-900 border border-transparent hover:border-[#262626] transition-all cursor-pointer group"
+            >
+              <ArrowBackIcon sx={{ fontSize: 16 }} className="group-hover:-translate-x-1 transition-transform" />
+              <span>Back to Settings</span>
+            </button>
+            <span className="text-xs font-mono text-neutral-400">Section 2 of 4</span>
+          </div>
 
-            <div className="flex items-center gap-2">
+          {/* Section Screen Container */}
+          <div className="rounded-2xl bg-[#0e0e10] border border-[#262626] p-6 sm:p-8 space-y-6 shadow-xl">
+            <div className="flex items-center justify-between pb-4 border-b border-[#1f1f22]">
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-black border border-[#262626] flex items-center justify-center text-white">
+                  <LockOutlinedIcon />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-white tracking-tight">Private Space 4-Digit PIN</h2>
+                  <p className="text-xs text-neutral-400">
+                    Bcrypt-encrypted isolation for sensitive notes
+                  </p>
+                </div>
+              </div>
+
               <span
-                className={`text-[11px] px-2.5 py-0.5 rounded-full font-mono ${
+                className={`text-xs px-3 py-1 rounded-full font-mono ${
                   user?.hasPin
                     ? "bg-white/10 text-white border border-white/30"
                     : "bg-neutral-800 text-neutral-400 border border-neutral-700"
@@ -348,221 +430,228 @@ export default function SettingsView() {
               >
                 {user?.hasPin ? "Configured" : "Not Set"}
               </span>
-              <ExpandMoreIcon
-                className={`text-neutral-400 transition-transform duration-300 ${
-                  activeSection === "pin" ? "rotate-180 text-white" : ""
-                }`}
-              />
             </div>
-          </button>
 
-          {/* Collapsible Content */}
-          {activeSection === "pin" && (
-            <div className="px-5 pb-6 sm:px-6 border-t border-[#1f1f22] pt-4 space-y-4">
-              <p className="text-xs text-neutral-400 leading-relaxed">
-                Your 4-digit PIN isolates your private notes. It is encrypted on our servers using Bcrypt and can only be unlocked with the correct numeric code.
-              </p>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Your 4-digit PIN isolates your private notes. It is encrypted on our servers using Bcrypt and can only be unlocked with the correct numeric code.
+            </p>
 
-              {pinResetMsg && (
-                <div
-                  className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
-                    pinResetMsg.type === "success"
-                      ? "bg-white/10 border border-white/30 text-white"
-                      : "bg-red-500/10 border border-red-500/30 text-red-400"
-                  }`}
-                >
-                  <span>{pinResetMsg.type === "success" ? "✓" : "⚠️"}</span>
-                  <span>{pinResetMsg.text}</span>
-                </div>
-              )}
+            {pinResetMsg && (
+              <div
+                className={`p-3.5 rounded-xl text-xs flex items-center gap-2.5 ${
+                  pinResetMsg.type === "success"
+                    ? "bg-white/10 border border-white/30 text-white"
+                    : "bg-red-500/10 border border-red-500/30 text-red-400"
+                }`}
+              >
+                <span>{pinResetMsg.type === "success" ? "✓" : "⚠️"}</span>
+                <span>{pinResetMsg.text}</span>
+              </div>
+            )}
 
-              <div className="pt-1 flex flex-wrap items-center gap-3">
+            <div className="pt-2 flex flex-wrap items-center gap-3">
+              <Button
+                variant="contained"
+                size="medium"
+                onClick={() => {
+                  setPinModalMode("setup");
+                  setPinModalOpen(true);
+                }}
+                sx={{
+                  backgroundColor: "#ffffff",
+                  color: "#000000",
+                  fontWeight: 600,
+                  fontSize: "13px",
+                  textTransform: "none",
+                  borderRadius: "10px",
+                  px: 3,
+                  py: 1,
+                  "&:hover": { backgroundColor: "#e5e5e5" },
+                }}
+              >
+                {user?.hasPin ? "Change 4-Digit PIN" : "Configure 4-Digit PIN"}
+              </Button>
+
+              {user?.hasPin && (
                 <Button
-                  variant="contained"
-                  size="small"
-                  onClick={() => {
-                    setPinModalMode("setup");
-                    setPinModalOpen(true);
+                  variant="outlined"
+                  size="medium"
+                  disabled={pinResetLoading}
+                  onClick={handleRequestPinResetEmail}
+                  sx={{
+                    borderColor: "#262626",
+                    color: "#ffffff",
+                    fontSize: "13px",
+                    textTransform: "none",
+                    borderRadius: "10px",
+                    px: 3,
+                    py: 1,
+                    "&:hover": { borderColor: "#525252", backgroundColor: "rgba(255, 255, 255, 0.05)" },
                   }}
+                >
+                  {pinResetLoading ? (
+                    <CircularProgress size={16} color="inherit" />
+                  ) : (
+                    "Request PIN Reset via Email"
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* SEPARATE SCREEN 3: Password & Security */}
+      {/* ========================================================================= */}
+      {activeSection === "password" && (
+        <div className="space-y-6">
+          {/* Back to Settings Header */}
+          <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
+            <button
+              type="button"
+              onClick={() => setActiveSection(null)}
+              className="flex items-center gap-2 text-xs font-semibold text-neutral-400 hover:text-white py-1 px-2.5 rounded-lg hover:bg-neutral-900 border border-transparent hover:border-[#262626] transition-all cursor-pointer group"
+            >
+              <ArrowBackIcon sx={{ fontSize: 16 }} className="group-hover:-translate-x-1 transition-transform" />
+              <span>Back to Settings</span>
+            </button>
+            <span className="text-xs font-mono text-neutral-400">Section 3 of 4</span>
+          </div>
+
+          {/* Section Screen Container */}
+          <div className="rounded-2xl bg-[#0e0e10] border border-[#262626] p-6 sm:p-8 space-y-6 shadow-xl">
+            <div className="flex items-center gap-3.5 pb-4 border-b border-[#1f1f22]">
+              <div className="w-11 h-11 rounded-xl bg-black border border-[#262626] flex items-center justify-center text-white">
+                <VpnKeyIcon />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white tracking-tight">Password &amp; Security</h2>
+                <p className="text-xs text-neutral-400">
+                  Update your primary account login credentials.
+                </p>
+              </div>
+            </div>
+
+            {passwordMsg && (
+              <div
+                className={`p-3.5 rounded-xl text-xs flex items-center gap-2.5 ${
+                  passwordMsg.type === "success"
+                    ? "bg-white/10 border border-white/30 text-white"
+                    : "bg-red-500/10 border border-red-500/30 text-red-400"
+                }`}
+              >
+                <span>{passwordMsg.type === "success" ? "✓" : "⚠️"}</span>
+                <span>{passwordMsg.text}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
+              <div>
+                <label className="block text-xs font-medium text-neutral-400 mb-1.5">Current Password</label>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full bg-black border border-[#262626] focus:border-white rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-neutral-400 mb-1.5">New Password</label>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Minimum 6 characters"
+                  className="w-full bg-black border border-[#262626] focus:border-white rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none placeholder-neutral-600 transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-neutral-400 mb-1.5">Confirm New Password</label>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Repeat new password"
+                  className="w-full bg-black border border-[#262626] focus:border-white rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none placeholder-neutral-600 transition-colors"
+                />
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-xs text-neutral-400 hover:text-white flex items-center gap-1.5 cursor-pointer"
+                >
+                  {showPassword ? <VisibilityOffIcon sx={{ fontSize: 16 }} /> : <VisibilityIcon sx={{ fontSize: 16 }} />}
+                  <span>{showPassword ? "Hide passwords" : "Show passwords"}</span>
+                </button>
+
+                <Button
+                  type="submit"
+                  disabled={passwordLoading}
+                  size="medium"
+                  variant="contained"
                   sx={{
                     backgroundColor: "#ffffff",
                     color: "#000000",
                     fontWeight: 600,
-                    fontSize: "12px",
+                    fontSize: "13px",
                     textTransform: "none",
-                    borderRadius: "8px",
+                    borderRadius: "10px",
+                    px: 3,
+                    py: 1,
                     "&:hover": { backgroundColor: "#e5e5e5" },
                   }}
                 >
-                  {user?.hasPin ? "Change 4-Digit PIN" : "Configure 4-Digit PIN"}
+                  {passwordLoading ? <CircularProgress size={16} color="inherit" /> : "Update Password"}
                 </Button>
-
-                {user?.hasPin && (
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    disabled={pinResetLoading}
-                    onClick={handleRequestPinResetEmail}
-                    sx={{
-                      borderColor: "#262626",
-                      color: "#ffffff",
-                      fontSize: "12px",
-                      textTransform: "none",
-                      borderRadius: "8px",
-                      "&:hover": { borderColor: "#525252", backgroundColor: "rgba(255, 255, 255, 0.05)" },
-                    }}
-                  >
-                    {pinResetLoading ? (
-                      <CircularProgress size={16} color="inherit" />
-                    ) : (
-                      "Request PIN Reset via Email"
-                    )}
-                  </Button>
-                )}
               </div>
-            </div>
-          )}
+            </form>
+          </div>
         </div>
+      )}
 
-        {/* ======================================================== */}
-        {/* 3. Password & Security Section */}
-        {/* ======================================================== */}
-        <div className="rounded-2xl bg-[#0e0e10] border border-[#262626] overflow-hidden transition-all">
-          <button
-            type="button"
-            onClick={() => toggleSection("password")}
-            className="w-full p-5 sm:p-6 flex items-center justify-between text-left hover:bg-neutral-900/50 transition-colors cursor-pointer"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-black border border-[#262626] flex items-center justify-center text-white">
-                <VpnKeyIcon sx={{ fontSize: 18 }} />
-              </div>
-              <div>
-                <h2 className="text-base font-semibold text-white">3. Password &amp; Security</h2>
-                <p className="text-xs text-neutral-400">
-                  Update your primary account login credentials
-                </p>
-              </div>
-            </div>
+      {/* ========================================================================= */}
+      {/* SEPARATE SCREEN 4: PWA & Offline Storage */}
+      {/* ========================================================================= */}
+      {activeSection === "pwa" && (
+        <div className="space-y-6">
+          {/* Back to Settings Header */}
+          <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
+            <button
+              type="button"
+              onClick={() => setActiveSection(null)}
+              className="flex items-center gap-2 text-xs font-semibold text-neutral-400 hover:text-white py-1 px-2.5 rounded-lg hover:bg-neutral-900 border border-transparent hover:border-[#262626] transition-all cursor-pointer group"
+            >
+              <ArrowBackIcon sx={{ fontSize: 16 }} className="group-hover:-translate-x-1 transition-transform" />
+              <span>Back to Settings</span>
+            </button>
+            <span className="text-xs font-mono text-neutral-400">Section 4 of 4</span>
+          </div>
 
-            <div className="flex items-center gap-2">
-              <ExpandMoreIcon
-                className={`text-neutral-400 transition-transform duration-300 ${
-                  activeSection === "password" ? "rotate-180 text-white" : ""
-                }`}
-              />
-            </div>
-          </button>
-
-          {/* Collapsible Content */}
-          {activeSection === "password" && (
-            <div className="px-5 pb-6 sm:px-6 border-t border-[#1f1f22] pt-4 space-y-4">
-              {passwordMsg && (
-                <div
-                  className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
-                    passwordMsg.type === "success"
-                      ? "bg-white/10 border border-white/30 text-white"
-                      : "bg-red-500/10 border border-red-500/30 text-red-400"
-                  }`}
-                >
-                  <span>{passwordMsg.type === "success" ? "✓" : "⚠️"}</span>
-                  <span>{passwordMsg.text}</span>
+          {/* Section Screen Container */}
+          <div className="rounded-2xl bg-[#0e0e10] border border-[#262626] p-6 sm:p-8 space-y-6 shadow-xl">
+            <div className="flex items-center justify-between pb-4 border-b border-[#1f1f22]">
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-black border border-[#262626] flex items-center justify-center text-white">
+                  <CloudSyncOutlinedIcon />
                 </div>
-              )}
-
-              <form onSubmit={handleChangePassword} className="space-y-3 max-w-md">
                 <div>
-                  <label className="block text-xs font-medium text-neutral-400 mb-1">Current Password</label>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full bg-black border border-[#262626] focus:border-white rounded-xl px-3 py-2 text-xs text-white focus:outline-none transition-colors"
-                  />
+                  <h2 className="text-lg font-bold text-white tracking-tight">PWA &amp; Offline Storage</h2>
+                  <p className="text-xs text-neutral-400">
+                    Service worker status, IndexedDB caching &amp; install
+                  </p>
                 </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-neutral-400 mb-1">New Password</label>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Minimum 6 characters"
-                    className="w-full bg-black border border-[#262626] focus:border-white rounded-xl px-3 py-2 text-xs text-white focus:outline-none placeholder-neutral-600 transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-neutral-400 mb-1">Confirm New Password</label>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Repeat new password"
-                    className="w-full bg-black border border-[#262626] focus:border-white rounded-xl px-3 py-2 text-xs text-white focus:outline-none placeholder-neutral-600 transition-colors"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="text-xs text-neutral-400 hover:text-white flex items-center gap-1 cursor-pointer"
-                  >
-                    {showPassword ? <VisibilityOffIcon fontSize="inherit" /> : <VisibilityIcon fontSize="inherit" />}
-                    <span>{showPassword ? "Hide passwords" : "Show passwords"}</span>
-                  </button>
-
-                  <Button
-                    type="submit"
-                    disabled={passwordLoading}
-                    size="small"
-                    variant="contained"
-                    sx={{
-                      backgroundColor: "#ffffff",
-                      color: "#000000",
-                      fontWeight: 600,
-                      fontSize: "12px",
-                      textTransform: "none",
-                      borderRadius: "8px",
-                      "&:hover": { backgroundColor: "#e5e5e5" },
-                    }}
-                  >
-                    {passwordLoading ? <CircularProgress size={16} color="inherit" /> : "Update Password"}
-                  </Button>
-                </div>
-              </form>
-            </div>
-          )}
-        </div>
-
-        {/* ======================================================== */}
-        {/* 4. PWA & Offline Storage Section */}
-        {/* ======================================================== */}
-        <div className="rounded-2xl bg-[#0e0e10] border border-[#262626] overflow-hidden transition-all">
-          <button
-            type="button"
-            onClick={() => toggleSection("pwa")}
-            className="w-full p-5 sm:p-6 flex items-center justify-between text-left hover:bg-neutral-900/50 transition-colors cursor-pointer"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-black border border-[#262626] flex items-center justify-center text-white">
-                <CloudSyncOutlinedIcon sx={{ fontSize: 18 }} />
               </div>
-              <div>
-                <h2 className="text-base font-semibold text-white">4. PWA &amp; Offline Storage</h2>
-                <p className="text-xs text-neutral-400">
-                  Service worker status, IndexedDB caching &amp; install
-                </p>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-2">
               <span
-                className={`text-[11px] px-2.5 py-0.5 rounded-full flex items-center gap-1.5 font-medium ${
+                className={`text-xs px-3 py-1 rounded-full flex items-center gap-1.5 font-medium ${
                   isOnline
                     ? "bg-white/10 text-white border border-white/20"
                     : "bg-neutral-800 text-neutral-400 border border-neutral-700"
@@ -570,80 +659,74 @@ export default function SettingsView() {
               >
                 {isOnline ? (
                   <>
-                    <CloudDoneOutlinedIcon sx={{ fontSize: 14 }} /> Online
+                    <CloudDoneOutlinedIcon sx={{ fontSize: 15 }} /> Online
                   </>
                 ) : (
                   <>
-                    <CloudOffOutlinedIcon sx={{ fontSize: 14 }} /> Offline
+                    <CloudOffOutlinedIcon sx={{ fontSize: 15 }} /> Offline
                   </>
                 )}
               </span>
-              <ExpandMoreIcon
-                className={`text-neutral-400 transition-transform duration-300 ${
-                  activeSection === "pwa" ? "rotate-180 text-white" : ""
-                }`}
-              />
             </div>
-          </button>
 
-          {/* Collapsible Content */}
-          {activeSection === "pwa" && (
-            <div className="px-5 pb-6 sm:px-6 border-t border-[#1f1f22] pt-4 space-y-4">
-              <p className="text-xs text-neutral-400 leading-relaxed">
-                Beginning leverages Service Workers and Dexie IndexedDB client caching. You can write, browse, and organize notes without an active internet connection.
-              </p>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Beginning leverages Service Workers and Dexie IndexedDB client caching. You can write, browse, and organize notes without an active internet connection.
+            </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="p-3.5 rounded-xl bg-black border border-[#262626]">
-                  <span className="text-neutral-400 text-[11px]">IndexedDB Cached Notes</span>
-                  <p className="font-mono text-white text-sm font-medium mt-1">{cachedNotesCount} records</p>
-                </div>
-                <div className="p-3.5 rounded-xl bg-black border border-[#262626]">
-                  <span className="text-neutral-400 text-[11px]">Service Worker State</span>
-                  <p className="font-mono text-neutral-300 text-xs mt-1">Active (sw.js v2)</p>
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+              <div className="p-4 rounded-xl bg-black border border-[#262626]">
+                <span className="text-neutral-400 text-[11px] font-medium block">IndexedDB Cached Notes</span>
+                <p className="font-mono text-white text-sm font-semibold mt-1">{cachedNotesCount} records</p>
               </div>
+              <div className="p-4 rounded-xl bg-black border border-[#262626]">
+                <span className="text-neutral-400 text-[11px] font-medium block">Service Worker State</span>
+                <p className="font-mono text-neutral-300 text-sm mt-1">Active (sw.js v2)</p>
+              </div>
+            </div>
 
-              <div className="pt-2 flex flex-wrap items-center gap-3">
-                {pwaInstallable && (
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={handleInstallPwa}
-                    sx={{
-                      backgroundColor: "#ffffff",
-                      color: "#000000",
-                      fontWeight: 600,
-                      fontSize: "12px",
-                      textTransform: "none",
-                      borderRadius: "8px",
-                      "&:hover": { backgroundColor: "#e5e5e5" },
-                    }}
-                  >
-                    Install App on Device
-                  </Button>
-                )}
-
+            <div className="pt-2 flex flex-wrap items-center gap-3">
+              {pwaInstallable && (
                 <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={handleClearCache}
+                  variant="contained"
+                  size="medium"
+                  onClick={handleInstallPwa}
                   sx={{
-                    borderColor: "#262626",
-                    color: "#a1a1aa",
-                    fontSize: "12px",
+                    backgroundColor: "#ffffff",
+                    color: "#000000",
+                    fontWeight: 600,
+                    fontSize: "13px",
                     textTransform: "none",
-                    borderRadius: "8px",
-                    "&:hover": { borderColor: "#525252", color: "#ffffff" },
+                    borderRadius: "10px",
+                    px: 3,
+                    py: 1,
+                    "&:hover": { backgroundColor: "#e5e5e5" },
                   }}
                 >
-                  Clear Local Cache
+                  Install App on Device
                 </Button>
-              </div>
+              )}
+
+              <Button
+                variant="outlined"
+                size="medium"
+                onClick={handleClearCache}
+                sx={{
+                  borderColor: "#262626",
+                  color: "#a1a1aa",
+                  fontSize: "13px",
+                  textTransform: "none",
+                  borderRadius: "10px",
+                  px: 3,
+                  py: 1,
+                  "&:hover": { borderColor: "#525252", color: "#ffffff", backgroundColor: "rgba(255,255,255,0.05)" },
+                }}
+              >
+                Clear Local Cache
+              </Button>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* PIN Modal for setup / reset triggers */}
       <PinModal
