@@ -87,14 +87,6 @@ export default function NoteCard({
           : "p-3 sm:p-4 w-full h-fit"
       }`}
     >
-      {/* Top Rainbow Accent Strip if custom color */}
-      {activeColor.accent && activeColor.id !== "default" && activeColor.id !== "black" && (
-        <div
-          className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl opacity-90"
-          style={{ backgroundColor: activeColor.accent }}
-        />
-      )}
-
       {/* Top Row: Title & Pin Button */}
       <div className="space-y-1.5 sm:space-y-2">
         <div className="flex items-start justify-between gap-1.5 sm:gap-2">

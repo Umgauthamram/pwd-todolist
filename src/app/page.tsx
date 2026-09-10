@@ -51,17 +51,14 @@ export default function HomePage() {
 
   const [activeTab, setActiveTab] = useState<NavItem>("notes");
   const [isGridView, setIsGridView] = useState<boolean>(true);
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem("beginning_sidebar_expanded");
-        if (saved !== null) return saved === "true";
-      } catch {}
-    }
-    return true;
-  });
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState<boolean>(true);
+  const [isMounted, setIsMounted] = useState<boolean>(false);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Initialize view mode state from localStorage on client
   useEffect(() => {
@@ -424,10 +421,10 @@ export default function HomePage() {
   }, [currentDataset]);
 
   // REQUIREMENT 1: Starting itself it should start with the login and signup
-  if (authLoading) {
+  if (!isMounted || authLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <CircularProgress size={32} sx={{ color: "#ffffff" }} />
+        <div className="w-8 h-8 rounded-full border-2 border-white/20 border-t-white animate-spin" />
       </div>
     );
   }

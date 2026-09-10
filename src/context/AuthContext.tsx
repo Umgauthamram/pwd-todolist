@@ -35,19 +35,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const USER_STORAGE_KEY = "beginning_cached_user";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Initialize user from localStorage to allow instantaneous offline loading
-  const [user, setUser] = useState<UserProfile | null>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem(USER_STORAGE_KEY);
-        if (stored) {
-          return JSON.parse(stored);
-        }
-      } catch {}
-    }
-    return null;
-  });
-
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
@@ -119,6 +107,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [checkPrivateStatus]);
 
   useEffect(() => {
+    try {
+      const stored = localStorage.getItem(USER_STORAGE_KEY);
+      if (stored) {
+        setUser(JSON.parse(stored));
+      }
+    } catch {}
     refreshUser();
   }, [refreshUser]);
 

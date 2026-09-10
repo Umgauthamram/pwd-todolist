@@ -154,14 +154,6 @@ export default function NoteCreator({ onSave }: NoteCreatorProps) {
         }}
         className="rounded-2xl p-4 shadow-2xl transition-colors space-y-3 relative"
       >
-        {/* Top Rainbow Accent Strip */}
-        {activeColor.accent && activeColor.id !== "default" && activeColor.id !== "black" && (
-          <div
-            className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl opacity-90"
-            style={{ backgroundColor: activeColor.accent }}
-          />
-        )}
-
         {/* Title Input & Pin Button */}
         <div className="flex items-center justify-between">
           <input

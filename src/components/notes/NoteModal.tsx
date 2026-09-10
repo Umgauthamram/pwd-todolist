@@ -131,14 +131,6 @@ export default function NoteModal({
         },
       }}
     >
-      {/* Top Rainbow Accent Strip */}
-      {activeColor.accent && activeColor.id !== "default" && activeColor.id !== "black" && (
-        <div
-          className="h-1.5 w-full shrink-0"
-          style={{ backgroundColor: activeColor.accent }}
-        />
-      )}
-
       <div className="p-5 sm:p-6 space-y-4">
         {/* Title Input & Pin Toggle */}
         <div className="flex items-center justify-between gap-2">
