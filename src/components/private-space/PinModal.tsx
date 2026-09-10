@@ -14,6 +14,7 @@ import {
   CheckCircle as CheckCircleIcon,
   ArrowBack as ArrowBackIcon,
 } from "@mui/icons-material";
+import DialpadIcon from "@mui/icons-material/Dialpad";
 
 export type PinModalMode = "enter" | "setup" | "reset";
 
@@ -40,6 +41,7 @@ export default function PinModal({
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [showMobileKeypad, setShowMobileKeypad] = useState<boolean>(false);
 
   const digitInputsRef = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -49,6 +51,7 @@ export default function PinModal({
     setPinDigits(["", "", "", ""]);
     setConfirmDigits(["", "", "", ""]);
     setSetupStep("enter");
+    setShowMobileKeypad(false);
     setError(null);
     setSuccessMsg(null);
     if (initialToken) setResetToken(initialToken);
@@ -108,6 +111,12 @@ export default function PinModal({
     if (e.key === "Backspace" && !activeDigits[index] && index > 0) {
       digitInputsRef.current[index - 1]?.focus();
     }
+    if (e.key === "Enter") {
+      const fullPin = activeDigits.join("");
+      if (fullPin.length === 4) {
+        handleCompletePin(fullPin);
+      }
+    }
   };
 
   // On-screen numeric keypad input
@@ -155,65 +164,64 @@ export default function PinModal({
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Verification failed";
         setError(msg);
-        setPinDigits(["", "", "", ""]);
-        setTimeout(() => digitInputsRef.current[0]?.focus(), 100);
+        setActiveDigits(["", "", "", ""]);
+        digitInputsRef.current[0]?.focus();
       } finally {
         setLoading(false);
       }
-      return;
     }
 
-    // MODE: SETUP
-    if (currentMode === "setup") {
+    // MODE: SETUP (Step 1: Enter -> Step 2: Confirm)
+    else if (currentMode === "setup") {
       if (setupStep === "enter") {
         setSetupStep("confirm");
-        setTimeout(() => digitInputsRef.current[0]?.focus(), 100);
-        return;
-      }
-
-      // Step: confirm
-      const originalPin = pinDigits.join("");
-      if (fullPin !== originalPin) {
-        setError("PIN confirmation does not match. Please try again.");
         setConfirmDigits(["", "", "", ""]);
-        setPinDigits(["", "", "", ""]);
-        setSetupStep("enter");
-        setTimeout(() => digitInputsRef.current[0]?.focus(), 100);
-        return;
-      }
-
-      setLoading(true);
-      try {
-        const res = await fetch("/api/private-space/setup-pin", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pin: originalPin, confirmPin: fullPin }),
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || "Setup failed");
-        }
-        setSuccessMsg("4-Digit PIN configured successfully!");
         setTimeout(() => {
-          onSuccess();
-          onClose();
-        }, 800);
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : "Failed to set PIN";
-        setError(msg);
-      } finally {
-        setLoading(false);
+          digitInputsRef.current[0]?.focus();
+        }, 50);
+      } else {
+        // Confirm step check
+        const originalPin = pinDigits.join("");
+        if (fullPin !== originalPin) {
+          setError("PINs do not match. Please try again.");
+          setConfirmDigits(["", "", "", ""]);
+          digitInputsRef.current[0]?.focus();
+          return;
+        }
+
+        setLoading(true);
+        try {
+          const res = await fetch("/api/private-space/setup-pin", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ pin: fullPin }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || "Failed to setup PIN");
+          }
+          setSuccessMsg("PIN configured successfully!");
+          setTimeout(() => {
+            onSuccess();
+            onClose();
+          }, 600);
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : "Setup failed";
+          setError(msg);
+          setConfirmDigits(["", "", "", ""]);
+          digitInputsRef.current[0]?.focus();
+        } finally {
+          setLoading(false);
+        }
       }
-      return;
     }
 
-    // MODE: RESET
-    if (currentMode === "reset") {
+    // MODE: RESET (Token + New PIN)
+    else if (currentMode === "reset") {
       if (!resetToken.trim()) {
-        setError("Please enter the reset token received via email");
+        setError("Please enter the reset token received via email.");
         return;
       }
-
       setLoading(true);
       try {
         const res = await fetch("/api/private-space/reset-pin", {
@@ -225,14 +233,17 @@ export default function PinModal({
         if (!res.ok) {
           throw new Error(data.error || "Reset failed");
         }
-        setSuccessMsg("PIN reset successfully! Unlocking space...");
+        setSuccessMsg("PIN successfully reset! Please sign in with your new PIN.");
         setTimeout(() => {
-          onSuccess();
-          onClose();
-        }, 800);
+          setCurrentMode("enter");
+          setPinDigits(["", "", "", ""]);
+          setSuccessMsg(null);
+        }, 1200);
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Reset failed";
         setError(msg);
+        setActiveDigits(["", "", "", ""]);
+        digitInputsRef.current[0]?.focus();
       } finally {
         setLoading(false);
       }
@@ -337,7 +348,7 @@ export default function PinModal({
           </div>
         )}
 
-        {/* 4-Digit Boxes */}
+        {/* 4-Digit Boxes (Users use native mobile number keypad) */}
         <div className="flex justify-center items-center gap-3 sm:gap-4 my-6">
           {[0, 1, 2, 3].map((idx) => {
             const hasDigit = Boolean(activeDigits[idx]);
@@ -349,6 +360,8 @@ export default function PinModal({
                   }}
                   type="password"
                   inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoComplete="one-time-code"
                   maxLength={1}
                   value={activeDigits[idx]}
                   onChange={(e) => handleDigitChange(idx, e.target.value)}
@@ -364,8 +377,49 @@ export default function PinModal({
           })}
         </div>
 
-        {/* On-Screen Numeric Keypad */}
-        <div className="grid grid-cols-3 gap-2 max-w-[240px] mx-auto mb-4 select-none">
+        {/* Mobile Submit Button (convenient when 4 digits typed on mobile) */}
+        {activeDigits.join("").length === 4 && (
+          <div className="sm:hidden text-center -mt-2 mb-3">
+            <Button
+              variant="contained"
+              size="small"
+              disabled={loading}
+              onClick={() => handleCompletePin(activeDigits.join(""))}
+              sx={{
+                backgroundColor: "#ffffff",
+                color: "#000000",
+                fontWeight: 600,
+                fontSize: "12px",
+                textTransform: "none",
+                borderRadius: "10px",
+                px: 3,
+                py: 0.8,
+                "&:hover": { backgroundColor: "#e5e5e5" },
+              }}
+            >
+              {currentMode === "enter" ? "Unlock" : setupStep === "enter" ? "Next" : "Confirm PIN"}
+            </Button>
+          </div>
+        )}
+
+        {/* Mobile Toggle Button for On-Screen Number Keypad fallback */}
+        <div className="sm:hidden text-center my-2">
+          <button
+            type="button"
+            onClick={() => setShowMobileKeypad((prev) => !prev)}
+            className="text-xs text-neutral-400 hover:text-white inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black border border-[#262626] hover:border-neutral-500 transition-colors cursor-pointer"
+          >
+            <DialpadIcon sx={{ fontSize: 13 }} />
+            <span>{showMobileKeypad ? "Hide on-screen number pad" : "Use on-screen number pad"}</span>
+          </button>
+        </div>
+
+        {/* On-Screen Numeric Keypad (Hidden by default on mobile unless toggled; visible on desktop) */}
+        <div
+          className={`${
+            showMobileKeypad ? "grid" : "hidden sm:grid"
+          } grid-cols-3 gap-2 max-w-[240px] mx-auto mb-4 select-none transition-all duration-200`}
+        >
           {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => (
             <button
               key={num}
@@ -398,6 +452,7 @@ export default function PinModal({
             disabled={loading}
             onClick={handleKeypadBackspace}
             className="h-12 rounded-xl bg-[#000000] hover:bg-[#1a1a1a] text-base font-medium text-neutral-400 hover:text-white transition-transform active:scale-95 flex items-center justify-center cursor-pointer"
+            aria-label="Backspace"
           >
             <BackspaceOutlinedIcon fontSize="small" />
           </button>
