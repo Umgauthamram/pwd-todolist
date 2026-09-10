@@ -295,16 +295,14 @@ export default function PinModal({
 
         {/* Security Shield Header */}
         <div className="text-center mb-6">
-          <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-white text-black flex items-center justify-center shadow-lg shadow-white/10">
-            <LockOutlinedIcon sx={{ fontSize: 30 }} />
-          </div>
+   
           <h2 className="text-lg font-bold tracking-tight text-white">
-            {currentMode === "enter" && "Unlock Private Space"}
+            {currentMode === "enter" && "Enter PIN"}
             {currentMode === "setup" && (setupStep === "enter" ? "Set 4-Digit PIN" : "Confirm 4-Digit PIN")}
             {currentMode === "reset" && "Reset 4-Digit PIN"}
           </h2>
           <p className="text-xs text-neutral-400 mt-1">
-            {currentMode === "enter" && "Enter your 4-digit security PIN to access isolated private notes."}
+            {currentMode === "enter" && "Enter your PIN"}
             {currentMode === "setup" && (setupStep === "enter" ? "Create a 4-digit numeric code to protect your private notes." : "Re-enter the 4-digit PIN to confirm.")}
             {currentMode === "reset" && "Enter the reset token sent to your email and your new 4-digit PIN."}
           </p>

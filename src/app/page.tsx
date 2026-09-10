@@ -500,9 +500,9 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* REQUIREMENT 1: Top Bar Navigation (replacing sidebar) */}
-      <nav aria-label="Main Navigation" className="sticky top-16 z-30 bg-black/95 backdrop-blur-md border-b border-[#262626] px-3 sm:px-4 py-2 flex items-center justify-between sm:justify-start gap-2 sm:gap-3 overflow-x-auto no-scrollbar">
-        <div className="flex items-center justify-around sm:justify-start gap-1 sm:gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar py-0.5 min-w-0">
+      {/* Mobile Top Bar Navigation (Hidden on desktop md:) */}
+      <nav aria-label="Mobile Navigation" className="md:hidden sticky top-16 z-30 bg-black/95 backdrop-blur-md border-b border-[#262626] px-3 py-2 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
+        <div className="flex items-center justify-around gap-1 w-full overflow-x-auto no-scrollbar py-0.5 min-w-0">
           {navItems.map((item) => {
             const isActive = activeTab === item.id && !selectedLabel;
             return (
@@ -510,7 +510,7 @@ export default function HomePage() {
                 <button
                   onClick={() => handleNavClick(item.id)}
                   aria-label={item.label}
-                  className={`flex items-center justify-center gap-2 p-2 sm:px-3.5 sm:py-1.5 rounded-full text-xs font-medium transition-all shrink-0 cursor-pointer ${
+                  className={`flex items-center justify-center p-2 rounded-full text-xs font-medium transition-all shrink-0 cursor-pointer ${
                     isActive
                       ? "bg-white text-black font-semibold shadow-sm"
                       : "text-neutral-400 hover:text-white hover:bg-neutral-900 border border-transparent hover:border-[#262626]"
@@ -519,34 +519,12 @@ export default function HomePage() {
                   <span className={isActive ? "text-black" : "text-neutral-400"}>
                     {item.icon}
                   </span>
-                  {/* On mobile: show only icons. On desktop: show label, badge, count */}
-                  <span className="whitespace-nowrap hidden sm:inline">{item.label}</span>
-                  {item.badge && (
-                    <span
-                      className={`hidden sm:inline text-[10px] px-1.5 py-0.5 rounded font-mono ${
-                        isActive
-                          ? "bg-black text-white"
-                          : "bg-neutral-900 text-neutral-300 border border-[#262626]"
-                      }`}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-                  {item.count !== undefined && item.count > 0 && (
-                    <span
-                      className={`hidden sm:inline text-xs font-mono font-medium ${
-                        isActive ? "text-neutral-700" : "text-neutral-500"
-                      }`}
-                    >
-                      {item.count}
-                    </span>
-                  )}
                 </button>
               </Tooltip>
             );
           })}
 
-          {/* Labels horizontal chips */}
+          {/* Labels horizontal chips on mobile */}
           {allLabels.length > 0 && (
             <div className="flex items-center gap-1.5 pl-2 border-l border-[#262626]">
               {allLabels.map((lbl) => {
@@ -555,7 +533,7 @@ export default function HomePage() {
                   <button
                     key={lbl}
                     onClick={() => setSelectedLabel(isLabelActive ? null : lbl)}
-                    className={`flex items-center gap-1 px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 cursor-pointer ${
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-all shrink-0 cursor-pointer ${
                       isLabelActive
                         ? "bg-white text-black font-semibold"
                         : "text-neutral-400 hover:text-white hover:bg-neutral-900 border border-[#262626]"
@@ -571,14 +549,109 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* Main Workspace Body (Full-width canvas without sidebar, pull-down to reload) */}
-      <div
-        ref={mainScrollRef}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        className="flex-1 w-full overflow-y-auto"
-      >
+      {/* Main Workspace: Desktop Sidebar (Windows / Mac) + Main Body */}
+      <div className="flex-1 flex flex-row min-h-[calc(100vh-64px)] overflow-hidden">
+        {/* Desktop Sidebar (Visible on Windows, Mac, desktop screens >= md) */}
+        <aside
+          aria-label="Desktop Sidebar"
+          className="hidden md:flex flex-col w-60 lg:w-64 shrink-0 border-r border-[#262626] bg-black p-3 space-y-6 sticky top-16 h-[calc(100vh-64px)] overflow-y-auto no-scrollbar"
+        >
+          {/* Main Navigation items */}
+          <div className="space-y-1">
+            {navItems.map((item) => {
+              const isActive = activeTab === item.id && !selectedLabel;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavClick(item.id)}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                    isActive
+                      ? "bg-white text-black font-semibold shadow-sm"
+                      : "text-neutral-400 hover:text-white hover:bg-neutral-900/80"
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className={isActive ? "text-black" : "text-neutral-400"}>
+                      {item.icon}
+                    </span>
+                    <span className="truncate">{item.label}</span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {item.badge && (
+                      <span
+                        className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
+                          isActive
+                            ? "bg-black text-white"
+                            : "bg-neutral-900 text-neutral-300 border border-[#262626]"
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                    {item.count !== undefined && item.count > 0 && (
+                      <span
+                        className={`text-xs font-mono font-medium ${
+                          isActive ? "text-neutral-800 font-bold" : "text-neutral-500"
+                        }`}
+                      >
+                        {item.count}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Labels section in desktop sidebar */}
+          {allLabels.length > 0 && (
+            <div className="space-y-2 pt-2 border-t border-[#1f1f22]">
+              <div className="px-3 flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-neutral-500">
+                <span>Labels</span>
+                {selectedLabel && (
+                  <button
+                    onClick={() => setSelectedLabel(null)}
+                    className="text-[10px] text-neutral-400 hover:text-white normal-case font-sans underline cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <div className="space-y-1">
+                {allLabels.map((lbl) => {
+                  const isLabelActive = selectedLabel === lbl;
+                  return (
+                    <button
+                      key={lbl}
+                      onClick={() => setSelectedLabel(isLabelActive ? null : lbl)}
+                      className={`w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer truncate ${
+                        isLabelActive
+                          ? "bg-white text-black font-semibold"
+                          : "text-neutral-400 hover:text-white hover:bg-neutral-900/80"
+                      }`}
+                    >
+                      <LabelOutlinedIcon
+                        sx={{ fontSize: 15 }}
+                        className={isLabelActive ? "text-black" : "text-neutral-500"}
+                      />
+                      <span className="truncate">#{lbl}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </aside>
+
+        {/* Main Workspace Body */}
+        <div
+          ref={mainScrollRef}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className="flex-1 w-full overflow-y-auto min-w-0"
+        >
         <main className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
           {/* Scroll down to reload pull indicator (Material UI CircularProgress) */}
           <div
@@ -956,6 +1029,7 @@ export default function HomePage() {
           </div>
         </main>
       </div>
+    </div>
 
       {/* Note Edit Modal */}
       <NoteModal
