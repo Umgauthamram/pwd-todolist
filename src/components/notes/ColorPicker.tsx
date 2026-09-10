@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import { PaletteOutlined as PaletteOutlinedIcon, Check as CheckIcon } from "@mui/icons-material";
+import Menu from "@mui/material/Menu";
 import { NOTE_COLORS, NoteColor, getNoteColor } from "@/constants/colors";
 
 interface ColorPickerProps {

@@ -1,4 +1,4 @@
-const CACHE_NAME = "beginning-pwa-v3";
+const CACHE_NAME = "beginning-pwa-v4";
 
 const PRECACHE_STATIC_ASSETS = [
   "/",
@@ -53,6 +53,12 @@ self.addEventListener("fetch", (event) => {
 
   // Ignore non-GET requests or browser-extension schemes
   if (request.method !== "GET" || !url.protocol.startsWith("http")) {
+    return;
+  }
+
+  // During local development, do not cache Next.js dev chunks or HMR
+  const isDev = url.hostname === "localhost" || url.hostname === "127.0.0.1";
+  if (isDev && (url.pathname.startsWith("/_next/") || url.pathname.includes("hot-update") || url.pathname.includes("webpack-hmr"))) {
     return;
   }
 
