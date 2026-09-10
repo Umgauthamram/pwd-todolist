@@ -509,7 +509,6 @@ export default function HomePage() {
               <Tooltip key={item.id} title={item.label} enterDelay={500}>
                 <button
                   onClick={() => handleNavClick(item.id)}
-                  title={item.label}
                   aria-label={item.label}
                   className={`flex items-center justify-center gap-2 p-2 sm:px-3.5 sm:py-1.5 rounded-full text-xs font-medium transition-all shrink-0 cursor-pointer ${
                     isActive
@@ -649,7 +648,7 @@ export default function HomePage() {
                       boxShadow: "0 4px 14px rgba(255, 255, 255, 0.15)",
                     }}
                   >
-                    {user?.hasPin ? "Unlock Private Space" : "Configure 4-Digit PIN"}
+                    {user?.hasPin ? "Unlock " : "Enter PIN"}
                   </Button>
                 </div>
               </div>
