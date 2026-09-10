@@ -170,17 +170,35 @@ export default function SearchScreen({
           )}
         </div>
 
-        {/* View Toggle */}
-        <div className="flex items-center gap-1 shrink-0">
-          <Tooltip title={isGridView ? "Switch to list view" : "Switch to grid view"}>
-            <IconButton
-              onClick={() => setIsGridView(!isGridView)}
-              className="text-neutral-400 hover:text-white hover:bg-neutral-900"
-              size="small"
-              aria-label="Toggle view mode"
+        {/* View Toggle Segmented Control */}
+        <div className="flex items-center bg-[#0e0e10] border border-[#262626] rounded-xl p-0.5 shrink-0">
+          <Tooltip title="Grid view">
+            <button
+              type="button"
+              onClick={() => setIsGridView(true)}
+              className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                isGridView
+                  ? "bg-white text-black shadow-sm"
+                  : "text-neutral-400 hover:text-white hover:bg-neutral-900"
+              }`}
+              aria-label="Grid view"
             >
-              {isGridView ? <ViewStreamIcon fontSize="small" /> : <GridViewIcon fontSize="small" />}
-            </IconButton>
+              <GridViewIcon fontSize="small" sx={{ fontSize: 17 }} />
+            </button>
+          </Tooltip>
+          <Tooltip title="List view">
+            <button
+              type="button"
+              onClick={() => setIsGridView(false)}
+              className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                !isGridView
+                  ? "bg-white text-black shadow-sm"
+                  : "text-neutral-400 hover:text-white hover:bg-neutral-900"
+              }`}
+              aria-label="List view"
+            >
+              <ViewStreamIcon fontSize="small" sx={{ fontSize: 17 }} />
+            </button>
           </Tooltip>
         </div>
       </header>
@@ -312,7 +330,7 @@ export default function SearchScreen({
             <div
               className={
                 isGridView
-                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start"
+                  ? "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 items-start"
                   : "flex flex-col gap-3 max-w-2xl mx-auto w-full"
               }
             >

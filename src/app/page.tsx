@@ -55,6 +55,30 @@ export default function HomePage() {
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
 
+  // Initialize view mode state from localStorage on client
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("beginning_view_mode");
+      if (saved !== null) {
+        setIsGridView(saved === "grid");
+      }
+    } catch {
+      // localStorage may fail in restricted/private contexts
+    }
+  }, []);
+
+  const toggleViewMode = useCallback((mode?: "grid" | "list") => {
+    setIsGridView((prev) => {
+      const next = mode !== undefined ? mode === "grid" : !prev;
+      try {
+        localStorage.setItem("beginning_view_mode", next ? "grid" : "list");
+      } catch {
+        // ignore storage errors
+      }
+      return next;
+    });
+  }, []);
+
   // Initialize sidebar expanded state from localStorage on client
   useEffect(() => {
     try {
@@ -476,17 +500,37 @@ export default function HomePage() {
             </IconButton>
           </Tooltip>
 
-          {/* Grid / List View Toggle */}
-          <Tooltip title={isGridView ? "Switch to list view" : "Switch to grid view"}>
-            <IconButton
-              onClick={() => setIsGridView(!isGridView)}
-              className="text-neutral-400 hover:text-white hover:bg-neutral-900 border border-transparent hover:border-[#262626]"
-              size="small"
-              aria-label="Toggle view layout"
-            >
-              {isGridView ? <ViewStreamIcon fontSize="small" /> : <GridViewIcon fontSize="small" />}
-            </IconButton>
-          </Tooltip>
+          {/* Grid / List View Segmented Control */}
+          <div className="flex items-center bg-[#0e0e10] border border-[#262626] rounded-xl p-0.5">
+            <Tooltip title="Grid view">
+              <button
+                type="button"
+                onClick={() => toggleViewMode("grid")}
+                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                  isGridView
+                    ? "bg-white text-black shadow-sm"
+                    : "text-neutral-400 hover:text-white hover:bg-neutral-900"
+                }`}
+                aria-label="Grid view"
+              >
+                <GridViewIcon fontSize="small" sx={{ fontSize: 17 }} />
+              </button>
+            </Tooltip>
+            <Tooltip title="List view">
+              <button
+                type="button"
+                onClick={() => toggleViewMode("list")}
+                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                  !isGridView
+                    ? "bg-white text-black shadow-sm"
+                    : "text-neutral-400 hover:text-white hover:bg-neutral-900"
+                }`}
+                aria-label="List view"
+              >
+                <ViewStreamIcon fontSize="small" sx={{ fontSize: 17 }} />
+              </button>
+            </Tooltip>
+          </div>
 
           {/* User Profile Button: Navigates to Settings Page */}
           <div className="flex items-center pl-1.5 sm:pl-2 border-l border-[#262626]">
@@ -723,17 +767,16 @@ export default function HomePage() {
               >
                 <div className="flex items-center gap-2.5">
                   <ChevronLeftIcon fontSize="small" className="group-hover:-translate-x-0.5 transition-transform text-neutral-400 group-hover:text-white" />
-                  <span>Shrink sidebar</span>
+                  <span>Collapse</span>
                 </div>
-                <span className="text-[10px] text-neutral-500 font-mono tracking-wider uppercase group-hover:text-neutral-300">Collapse</span>
-              </button>
+                      </button>
             ) : (
               <Tooltip title="Expand sidebar" placement="right" enterDelay={300}>
                 <button
                   type="button"
                   onClick={toggleSidebar}
                   aria-label="Expand sidebar"
-                  className="w-11 h-11 mx-auto flex items-center justify-center rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-900 border border-[#262626]/70 hover:border-[#3a3a3a] transition-all cursor-pointer group"
+                  className="w-11 h-11 mx-auto flex items-center justify-center rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-900 transition-all cursor-pointer group"
                 >
                   <ChevronRightIcon fontSize="small" className="group-hover:translate-x-0.5 transition-transform text-neutral-400 group-hover:text-white" />
                 </button>
@@ -946,7 +989,7 @@ export default function HomePage() {
                     <div
                       className={
                         isGridView
-                          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start"
+                          ? "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 items-start"
                           : "flex flex-col gap-3 max-w-2xl mx-auto w-full"
                       }
                     >
@@ -982,7 +1025,7 @@ export default function HomePage() {
                     <div
                       className={
                         isGridView
-                          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start"
+                          ? "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 items-start"
                           : "flex flex-col gap-3 max-w-2xl mx-auto w-full"
                       }
                     >
@@ -1038,7 +1081,7 @@ export default function HomePage() {
                   <div
                     className={
                       isGridView
-                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start"
+                        ? "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 items-start"
                         : "flex flex-col gap-3 max-w-2xl mx-auto w-full"
                     }
                   >
@@ -1084,7 +1127,7 @@ export default function HomePage() {
                   <div
                     className={
                       isGridView
-                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start"
+                        ? "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 items-start"
                         : "flex flex-col gap-3 max-w-2xl mx-auto w-full"
                     }
                   >

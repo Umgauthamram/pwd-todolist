@@ -74,15 +74,23 @@ export default function NoteCard({
         backgroundColor: note.color || "#0e0e10",
         borderColor,
       }}
-      className={`group relative rounded-2xl border transition-all duration-200 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-between p-4 w-full h-fit ${
-        viewMode === "list" ? "max-w-2xl mx-auto" : ""
+      className={`group relative rounded-2xl border transition-all duration-200 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-between ${
+        viewMode === "list"
+          ? "p-4 sm:p-5 w-full max-w-2xl mx-auto"
+          : "p-3 sm:p-4 w-full h-fit"
       }`}
     >
       {/* Top Row: Title & Pin Button */}
-      <div className="space-y-2">
-        <div className="flex items-start justify-between gap-2">
+      <div className="space-y-1.5 sm:space-y-2">
+        <div className="flex items-start justify-between gap-1.5 sm:gap-2">
           {note.title ? (
-            <h3 className="font-semibold text-sm sm:text-base text-white break-words line-clamp-2 leading-snug">
+            <h3
+              className={`font-semibold text-white break-words leading-snug ${
+                viewMode === "list"
+                  ? "text-sm sm:text-base line-clamp-2"
+                  : "text-xs sm:text-sm md:text-base line-clamp-2"
+              }`}
+            >
               {note.title}
             </h3>
           ) : (
@@ -92,7 +100,7 @@ export default function NoteCard({
           {!isTrashView && (
             <div
               className={`transition-opacity ${
-                note.isPinned || isHovered ? "opacity-100" : "opacity-0"
+                note.isPinned || isHovered ? "opacity-100" : "opacity-50 sm:opacity-0"
               }`}
               onClick={(e) => e.stopPropagation()}
             >
@@ -101,11 +109,12 @@ export default function NoteCard({
                   size="small"
                   onClick={() => onTogglePin(note)}
                   className={note.isPinned ? "text-white" : "text-neutral-400 hover:text-white"}
+                  sx={{ padding: "4px" }}
                 >
                   {note.isPinned ? (
-                    <PushPinIcon fontSize="small" />
+                    <PushPinIcon sx={{ fontSize: 18 }} />
                   ) : (
-                    <PushPinOutlinedIcon fontSize="small" />
+                    <PushPinOutlinedIcon sx={{ fontSize: 18 }} />
                   )}
                 </IconButton>
               </Tooltip>
@@ -115,18 +124,24 @@ export default function NoteCard({
 
         {/* Content Preview */}
         {note.content && (
-          <p className="text-xs sm:text-sm text-neutral-300 whitespace-pre-wrap break-words line-clamp-6 leading-relaxed">
+          <p
+            className={`text-neutral-300 whitespace-pre-wrap break-words leading-relaxed ${
+              viewMode === "list"
+                ? "text-xs sm:text-sm line-clamp-10"
+                : "text-[11px] sm:text-xs md:text-sm line-clamp-5 sm:line-clamp-6"
+            }`}
+          >
             {note.content}
           </p>
         )}
 
         {/* Labels Display */}
         {note.labels && note.labels.length > 0 && (
-          <div className="flex flex-wrap gap-1 pt-2">
+          <div className="flex flex-wrap gap-1 pt-1.5">
             {note.labels.map((lbl) => (
               <span
                 key={lbl}
-                className="text-[10px] px-2 py-0.5 rounded-full bg-black/60 text-neutral-300 border border-[#262626] font-medium"
+                className="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full bg-black/60 text-neutral-300 border border-[#262626] font-medium"
               >
                 #{lbl}
               </span>
@@ -138,8 +153,8 @@ export default function NoteCard({
       {/* Bottom Row: Actions Bar */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`mt-4 pt-2 border-t border-[#262626] flex items-center justify-between text-xs text-neutral-400 transition-opacity duration-150 ${
-          isHovered ? "opacity-100" : "opacity-0 sm:opacity-0"
+        className={`mt-3 sm:mt-4 pt-2 border-t border-[#262626] flex items-center justify-between text-xs text-neutral-400 transition-opacity duration-150 ${
+          isHovered ? "opacity-100" : "opacity-75 sm:opacity-0"
         }`}
       >
         {isTrashView ? (
