@@ -47,6 +47,7 @@ declare module "@mui/icons-material" {
   export const ExpandMore: SvgIconComponent;
   export const KeyboardArrowDown: SvgIconComponent;
   export const ChevronRight: SvgIconComponent;
+  export const ChevronLeft: SvgIconComponent;
   export const ArrowForward: SvgIconComponent;
 
   const icons: Record<string, SvgIconComponent>;
