@@ -51,7 +51,15 @@ export default function HomePage() {
 
   const [activeTab, setActiveTab] = useState<NavItem>("notes");
   const [isGridView, setIsGridView] = useState<boolean>(true);
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState<boolean>(false);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("beginning_sidebar_expanded");
+        if (saved !== null) return saved === "true";
+      } catch {}
+    }
+    return true;
+  });
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
 
@@ -463,9 +471,9 @@ export default function HomePage() {
   ];
 
   return (
-    <Box className="min-h-screen bg-black text-white flex flex-col selection:bg-white selection:text-black">
+    <Box className="h-screen max-h-screen overflow-hidden bg-black text-white flex flex-col selection:bg-white selection:text-black">
       {/* Top Header Bar: Section Indicator, Search Icon Button, View Mode Toggle, Profile/Settings Button */}
-      <header className="sticky top-0 z-40 h-16 border-b border-[#262626] bg-black/95 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between gap-3">
+      <header className="shrink-0 z-40 h-16 border-b border-[#262626] bg-black/95 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between gap-3">
         {/* Left: Active Section Title */}
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-sm sm:text-base font-bold text-white tracking-tight">
@@ -572,7 +580,7 @@ export default function HomePage() {
       </header>
 
       {/* Mobile Top Bar Navigation (Hidden on desktop md:) */}
-      <nav aria-label="Mobile Navigation" className="md:hidden sticky top-16 z-30 bg-black/95 backdrop-blur-md border-b border-[#262626] px-3 py-2 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
+      <nav aria-label="Mobile Navigation" className="md:hidden shrink-0 z-30 bg-black/95 backdrop-blur-md border-b border-[#262626] px-3 py-2 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
         <div className="flex items-center justify-around gap-1 w-full overflow-x-auto no-scrollbar py-0.5 min-w-0">
           {navItems.map((item) => {
             const isActive = activeTab === item.id && !selectedLabel;
@@ -621,11 +629,11 @@ export default function HomePage() {
       </nav>
 
       {/* Main Workspace: Desktop Sidebar (Windows / Mac) + Main Body */}
-      <div className="flex-1 flex flex-row min-h-[calc(100vh-64px)] overflow-hidden">
+      <div className="flex-1 flex flex-row min-h-0 overflow-hidden">
         {/* Desktop Sidebar (Windows / Mac) with Bottom Shrink/Expand Button */}
         <aside
           aria-label="Desktop Sidebar"
-          className={`hidden md:flex flex-col justify-between shrink-0 border-r border-[#262626] bg-black sticky top-16 h-[calc(100vh-64px)] transition-all duration-200 ease-in-out ${
+          className={`hidden md:flex flex-col justify-between shrink-0 border-r border-[#262626] bg-black h-full transition-all duration-200 ease-in-out ${
             isSidebarExpanded ? "w-60" : "w-16"
           }`}
         >
@@ -757,28 +765,29 @@ export default function HomePage() {
           </div>
 
           {/* DOWN BUTTON: User can shrink and expand the sidebar here */}
-          <div className={`border-t border-[#262626] p-2 shrink-0 bg-black ${isSidebarExpanded ? "px-3" : "px-1.5"}`}>
+          <div className={`border-t border-[#262626] p-2.5 shrink-0 bg-black ${isSidebarExpanded ? "px-3" : "px-2"}`}>
             {isSidebarExpanded ? (
               <button
                 type="button"
                 onClick={toggleSidebar}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-neutral-400 hover:text-white hover:bg-neutral-900 border border-[#262626]/70 hover:border-[#3a3a3a] transition-all cursor-pointer group"
-                aria-label="Shrink sidebar"
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-white bg-[#212121] hover:bg-[#282828] transition-all cursor-pointer group shadow-sm"
+                aria-label="Collapse sidebar"
               >
-                <div className="flex items-center gap-2.5">
-                  <ChevronLeftIcon fontSize="small" className="group-hover:-translate-x-0.5 transition-transform text-neutral-400 group-hover:text-white" />
+                <div className="flex items-center gap-2">
+                  <ChevronLeftIcon fontSize="small" className="group-hover:-translate-x-1 transition-transform text-neutral-300 group-hover:text-white" />
                   <span>Collapse</span>
                 </div>
-                      </button>
+                <span className="text-[10px] text-neutral-400 font-mono tracking-wider uppercase">Shrink</span>
+              </button>
             ) : (
               <Tooltip title="Expand sidebar" placement="right" enterDelay={300}>
                 <button
                   type="button"
                   onClick={toggleSidebar}
                   aria-label="Expand sidebar"
-                  className="w-11 h-11 mx-auto flex items-center justify-center rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-900 transition-all cursor-pointer group"
+                  className="w-12 h-12 mx-auto flex items-center justify-center rounded-xl text-white bg-[#212121] hover:bg-[#282828] transition-all cursor-pointer group shadow-sm"
                 >
-                  <ChevronRightIcon fontSize="small" className="group-hover:translate-x-0.5 transition-transform text-neutral-400 group-hover:text-white" />
+                  <ChevronRightIcon fontSize="small" className="group-hover:translate-x-1 transition-transform text-neutral-300 group-hover:text-white" />
                 </button>
               </Tooltip>
             )}
@@ -791,7 +800,7 @@ export default function HomePage() {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="flex-1 w-full overflow-y-auto min-w-0"
+          className="flex-1 h-full overflow-y-auto min-w-0"
         >
         <main className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
           {/* Scroll down to reload pull indicator (Material UI CircularProgress) */}
