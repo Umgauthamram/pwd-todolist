@@ -31,20 +31,79 @@ export default function PwaRegistrar() {
   const [bannerDismissed, setBannerDismissed] = useState<boolean>(false);
   const [instructionsOpen, setInstructionsOpen] = useState<boolean>(false);
   const [installedSuccess, setInstalledSuccess] = useState<boolean>(false);
+  const [updateAvailable, setUpdateAvailable] = useState<boolean>(false);
 
   useEffect(() => {
-    // 1. Register Service Worker
+    // 1. Register Service Worker with Automatic Update Handling
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
+      let refreshing = false;
+
+      // When the new Service Worker takes control, reload page seamlessly
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
+
+      const registerSw = () => {
         navigator.serviceWorker
           .register("/sw.js")
           .then((registration) => {
             console.log("[PWA] ServiceWorker registered:", registration.scope);
+
+            // Check if there is already a waiting worker
+            if (registration.waiting) {
+              setUpdateAvailable(true);
+              registration.waiting.postMessage({ type: "SKIP_WAITING" });
+            }
+
+            // Listen for new service worker installation
+            registration.addEventListener("updatefound", () => {
+              const newWorker = registration.installing;
+              if (newWorker) {
+                newWorker.addEventListener("statechange", () => {
+                  if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                    // New version available! Prompt immediate activation
+                    setUpdateAvailable(true);
+                    newWorker.postMessage({ type: "SKIP_WAITING" });
+                  }
+                });
+              }
+            });
+
+            // Check for updates on startup
+            registration.update();
+
+            // Periodic background check every 15 minutes
+            const updateInterval = setInterval(() => {
+              registration.update();
+            }, 15 * 60 * 1000);
+
+            // Check for updates when user returns to the app / window focuses
+            const onVisibilityChange = () => {
+              if (document.visibilityState === "visible") {
+                registration.update();
+              }
+            };
+            document.addEventListener("visibilitychange", onVisibilityChange);
+            window.addEventListener("focus", () => registration.update());
+
+            return () => {
+              clearInterval(updateInterval);
+              document.removeEventListener("visibilitychange", onVisibilityChange);
+            };
           })
           .catch((error) => {
             console.error("[PWA] ServiceWorker registration failed:", error);
           });
-      });
+      };
+
+      if (document.readyState === "complete") {
+        registerSw();
+      } else {
+        window.addEventListener("load", registerSw);
+      }
     }
 
     // 2. Check standalone mode (already installed as PWA)
@@ -140,6 +199,19 @@ export default function PwaRegistrar() {
 
   return (
     <>
+      {/* Update Available Notification Banner */}
+      {updateAvailable && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl bg-white text-black font-semibold text-xs shadow-2xl flex items-center gap-3 border border-neutral-200 backdrop-blur-md animate-bounce">
+          <span>✨ App updated to latest version!</span>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-2.5 py-1 rounded-lg bg-black text-white text-[11px] font-bold hover:bg-neutral-800 transition-colors cursor-pointer"
+          >
+            Refresh Now
+          </button>
+        </div>
+      )}
+
       {/* Offline Alert */}
       {isOffline && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-neutral-900 border border-neutral-700 text-white font-medium text-xs shadow-2xl flex items-center gap-2 backdrop-blur-md animate-pulse">

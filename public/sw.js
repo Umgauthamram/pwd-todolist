@@ -39,6 +39,13 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// Immediate Activation Trigger from Client
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
+
 // Fetch: Robust strategy for offline Next.js PWA
 self.addEventListener("fetch", (event) => {
   const { request } = event;
