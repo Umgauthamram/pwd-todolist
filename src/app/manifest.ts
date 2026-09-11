@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Beginning — Google Keep Notes & Private Space",
+    name: "Beginning — Notes & Private Space",
     short_name: "Beginning",
     description:
-      "A modern Google Keep-inspired productivity suite with public workspace, monochrome black and white aesthetics, and an isolated 4-digit PIN Private Space.",
+      "A modern notes app, productivity suite with public workspace, monochrome black and white aesthetics, and an isolated 4-digit PIN Private Space.",
     id: "/",
     start_url: "/",
     scope: "/",

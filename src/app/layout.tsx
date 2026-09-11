@@ -18,9 +18,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Beginning — Google Keep Notes & Private Space",
+  title: "Beginning —  Private Space",
   description:
-    "A modern Google Keep-inspired notes application with a secure 4-digit PIN Private Space and offline PWA support.",
+    "A modern  notes application with a secure 4-digit PIN Private Space and offline PWA support.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
